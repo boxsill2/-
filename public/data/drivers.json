@@ -1,0 +1,128 @@
+[
+  {
+    "slug": "oscar-piastri",
+    "full_name": "Oscar Piastri",
+    "number": "81",
+    "team_name": "McLaren"
+  },
+  {
+    "slug": "lando-norris",
+    "full_name": "Lando Norris",
+    "number": "4",
+    "team_name": "McLaren"
+  },
+  {
+    "slug": "max-verstappen",
+    "full_name": "Max Verstappen",
+    "number": "33",
+    "team_name": "Red Bull"
+  },
+  {
+    "slug": "george-russell",
+    "full_name": "George Russell",
+    "number": "63",
+    "team_name": "Mercedes"
+  },
+  {
+    "slug": "charles-leclerc",
+    "full_name": "Charles Leclerc",
+    "number": "16",
+    "team_name": "Ferrari"
+  },
+  {
+    "slug": "lewis-hamilton",
+    "full_name": "Lewis Hamilton",
+    "number": "44",
+    "team_name": "Ferrari"
+  },
+  {
+    "slug": "andrea-kimi-antonelli",
+    "full_name": "Andrea Kimi Antonelli",
+    "number": "12",
+    "team_name": "Mercedes"
+  },
+  {
+    "slug": "alexander-albon",
+    "full_name": "Alexander Albon",
+    "number": "23",
+    "team_name": "Williams"
+  },
+  {
+    "slug": "isack-hadjar",
+    "full_name": "Isack Hadjar",
+    "number": "6",
+    "team_name": "RB F1 Team"
+  },
+  {
+    "slug": "nico-hulkenberg",
+    "full_name": "Nico Hülkenberg",
+    "number": "27",
+    "team_name": "Sauber"
+  },
+  {
+    "slug": "lance-stroll",
+    "full_name": "Lance Stroll",
+    "number": "18",
+    "team_name": "Aston Martin"
+  },
+  {
+    "slug": "carlos-sainz",
+    "full_name": "Carlos Sainz",
+    "number": "55",
+    "team_name": "Williams"
+  },
+  {
+    "slug": "liam-lawson",
+    "full_name": "Liam Lawson",
+    "number": "30",
+    "team_name": "Red Bull"
+  },
+  {
+    "slug": "fernando-alonso",
+    "full_name": "Fernando Alonso",
+    "number": "14",
+    "team_name": "Aston Martin"
+  },
+  {
+    "slug": "esteban-ocon",
+    "full_name": "Esteban Ocon",
+    "number": "31",
+    "team_name": "Haas F1 Team"
+  },
+  {
+    "slug": "pierre-gasly",
+    "full_name": "Pierre Gasly",
+    "number": "10",
+    "team_name": "Alpine F1 Team"
+  },
+  {
+    "slug": "yuki-tsunoda",
+    "full_name": "Yuki Tsunoda",
+    "number": "22",
+    "team_name": "RB F1 Team"
+  },
+  {
+    "slug": "gabriel-bortoleto",
+    "full_name": "Gabriel Bortoleto",
+    "number": "5",
+    "team_name": "Sauber"
+  },
+  {
+    "slug": "oliver-bearman",
+    "full_name": "Oliver Bearman",
+    "number": "87",
+    "team_name": "Haas F1 Team"
+  },
+  {
+    "slug": "franco-colapinto",
+    "full_name": "Franco Colapinto",
+    "number": "43",
+    "team_name": "Alpine F1 Team"
+  },
+  {
+    "slug": "jack-doohan",
+    "full_name": "Jack Doohan",
+    "number": "7",
+    "team_name": "Alpine F1 Team"
+  }
+]

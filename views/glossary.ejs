@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>F1 용어집</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="/css/base.css?v=f1" />
+  <link rel="stylesheet" href="/css/header-style.css?v=f1" />
+</head>
+<body>
+  <%- include('partials/header', { currentPage: 'glossary' }) %>
+
+  <main class="container">
+    <header class="page-header">
+      <h1>용어집</h1>
+    </header>
+
+    <div class="search-bar-container">
+      <input type="text" id="searchInput" class="search-input" placeholder="용어 또는 내용으로 검색...">
+    </div>
+
+    <section class="card">
+      <div id="glossaryList" class="glossary-list">
+        <% (terms || []).forEach(function (item) { %>
+          <div class="glossary-item">
+            <dt class="glossary-term"><%- item.term %></dt>
+            <dd class="glossary-definition"><%- item.definition %></dd>
+          </div>
+        <% }) %>
+      </div>
+
+      <% if (!terms || terms.length === 0) { %>
+        <div class="card card--muted" style="margin-top:12px">
+          <p>등록된 용어가 없습니다.</p>
+        </div>
+      <% } %>
+      
+      <div id="noResultsMessage" class="no-results-message" style="display: none;">
+        <p>검색 결과가 없습니다.</p>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    /* 기존 스타일 */
+    .glossary-list{display:grid;grid-template-columns:1fr;gap:10px}
+    .glossary-item{border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;background:rgba(255,255,255,.03)}
+    .glossary-term{font-weight:700;margin:0 0 6px}
+    .glossary-definition{margin:0;opacity:.9;line-height:1.5}
+    @media (min-width: 900px){ .glossary-list{grid-template-columns:1fr 1fr} }
+    
+    /* 검색창 스타일 */
+    .search-bar-container { margin-bottom: 24px; }
+    .search-input {
+      width: 100%; padding: 12px 16px; font-size: 16px; border-radius: 12px;
+      border: 1px solid var(--line); background-color: var(--surface-2); color: var(--text);
+    }
+    .search-input:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(225, 6, 0, 0.4);
+    }
+    .no-results-message { padding: 20px; text-align: center; color: var(--muted); }
+
+    /* 1. 하이라이트 스타일 추가 */
+    mark {
+      background-color: #FFD700; /* 노란색 배경 */
+      color: #000; /* 검은색 글씨 */
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const glossaryList = document.getElementById('glossaryList');
+      const glossaryItems = glossaryList.querySelectorAll('.glossary-item');
+      const noResultsMessage = document.getElementById('noResultsMessage');
+
+      // 원본 텍스트를 저장해 둡니다.
+      const originalTexts = Array.from(glossaryItems).map(item => ({
+        term: item.querySelector('.glossary-term').innerHTML,
+        definition: item.querySelector('.glossary-definition').innerHTML,
+      }));
+
+      // 하이라이트 함수
+      function highlightText(text, query) {
+        if (!query) return text;
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+      }
+
+      searchInput.addEventListener('input', (event) => {
+        const query = event.target.value.trim();
+        let visibleCount = 0;
+
+        glossaryItems.forEach((item, index) => {
+          const termEl = item.querySelector('.glossary-term');
+          const defEl = item.querySelector('.glossary-definition');
+          
+          const originalTerm = originalTexts[index].term;
+          const originalDef = originalTexts[index].definition;
+
+          // 검색어가 없으면 원본 텍스트로 복원
+          if (!query) {
+            termEl.innerHTML = originalTerm;
+            defEl.innerHTML = originalDef;
+            item.style.display = '';
+            visibleCount++;
+            return;
+          }
+
+          const termText = termEl.textContent.toLowerCase();
+          const defText = defEl.textContent.toLowerCase();
+          
+          const isVisible = termText.includes(query.toLowerCase()) || defText.includes(query.toLowerCase());
+
+          if (isVisible) {
+            item.style.display = '';
+            termEl.innerHTML = highlightText(originalTerm, query);
+            defEl.innerHTML = highlightText(originalDef, query);
+            visibleCount++;
+          } else {
+            item.style.display = 'none';
+          }
+        });
+
+        noResultsMessage.style.display = visibleCount === 0 && query ? 'block' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

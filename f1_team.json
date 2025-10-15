@@ -1,0 +1,92 @@
+[
+    {
+        "constructorId": "mclaren",
+        "name": "McLaren",
+        "koreanName": "맥라렌",
+        "teamColor": "#FF8000",
+        "logoUrl": "/images/teams/mclaren.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/mclaren.png",
+        "drivers": ["Oscar PIASTRI", "Lando NORRIS"]
+    },
+    {
+        "constructorId": "ferrari",
+        "name": "Ferrari",
+        "koreanName": "페라리",
+        "teamColor": "#E8002D",
+        "logoUrl": "/images/teams/ferrari.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/ferrari.png",
+        "drivers": ["Charles LECLERC", "Lewis HAMILTON"]
+    },
+    {
+        "constructorId": "mercedes",
+        "name": "Mercedes",
+        "koreanName": "메르세데스",
+        "teamColor": "#27F4D2",
+        "logoUrl": "/images/teams/mercedes.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/mercedes.png",
+        "drivers": ["George RUSSELL", "Kimi ANTONELLI"]
+    },
+    {
+        "constructorId": "red_bull",
+        "name": "Red Bull Racing",
+        "koreanName": "레드불 레이싱",
+        "teamColor": "#3671C6",
+        "logoUrl": "/images/teams/red-bull.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/red-bull-racing.png",
+        "drivers": ["Max VERSTAPPEN", "Sergio PEREZ"]
+    },
+    {
+        "constructorId": "williams",
+        "name": "Williams",
+        "koreanName": "윌리엄스",
+        "teamColor": "#64C4FF",
+        "logoUrl": "/images/teams/williams.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/williams.png",
+        "drivers": ["Alexander ALBON", "Carlos SAINZ"]
+    },
+    {
+        "constructorId": "aston_martin",
+        "name": "Aston Martin",
+        "koreanName": "애스턴 마틴",
+        "teamColor": "#229971",
+        "logoUrl": "/images/teams/aston-martin.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/aston-martin.png",
+        "drivers": ["Lance STROLL", "Fernando ALONSO"]
+    },
+    {
+        "constructorId": "alpine",
+        "name": "Alpine",
+        "koreanName": "알핀",
+        "teamColor": "#FF8DE7",
+        "logoUrl": "/images/teams/alpine-f1-team.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/alpine.png",
+        "drivers": ["Pierre GASLY", "Jack DOOHAN"]
+    },
+    {
+        "constructorId": "haas",
+        "name": "Haas F1 Team",
+        "koreanName": "하스 F1 팀",
+        "teamColor": "#B6BABD",
+        "logoUrl": "/images/teams/haas-f1-team.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/haas.png",
+        "drivers": ["Oliver BEARMAN", "Esteban OCON"]
+    },
+    {
+        "constructorId": "kick_sauber",
+        "name": "Kick Sauber",
+        "koreanName": "킥 자우버",
+        "teamColor": "#52E252",
+        "logoUrl": "/images/teams/sauber.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/kick-sauber.png",
+        "drivers": ["Nico HULKENBERG", "Gabriel BORTOLETO"]
+    },
+    {
+        "constructorId": "rb",
+        "name": "RB",
+        "koreanName": "RB",
+        "teamColor": "#6692FF",
+        "logoUrl": "/images/teams/rb-f1-team.png",
+        "carUrl": "https://www.formula1.com/content/dam/fom-website/teams/2024/rb.png",
+        "drivers": ["Yuki TSUNODA", "Liam LAWSON"]
+    }
+]

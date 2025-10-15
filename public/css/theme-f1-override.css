@@ -1,0 +1,25 @@
+/* F1 공식 다크톤 강제 오버라이드 (마지막에 로드) */
+:root{
+  --bg:#0B0F14; --bg-alt:#0E1420; --surface:#0E1420; --surface-2:#111A2B; --line:#1C2230;
+  --text:#EAEFF7; --muted:#9FB0C6; --accent:#E10600; --accent-2:#FF2E1F;
+}
+
+/* 전역 강제 */
+html, body{ background:var(--bg) !important; color:var(--text) !important; }
+a{ color:var(--text) !important; } a:hover{ color:#fff !important; }
+
+.card{ background:var(--surface) !important; border:1px solid var(--line) !important; }
+.card:hover{ background:var(--surface-2) !important; }
+
+.btn{ background:#131A28 !important; color:var(--text) !important; border:1px solid var(--line) !important; }
+.btn--primary{ background:linear-gradient(90deg,var(--accent),var(--accent-2)) !important; border-color:transparent !important; color:#fff !important; }
+.btn--ghost{ background:transparent !important; border:1px solid var(--line) !important; color:var(--text) !important; }
+
+.site-header{ background:#0A0E13 !important; border-bottom:1px solid var(--line) !important; }
+.site-header .nav-item::after{ background:linear-gradient(90deg,var(--accent),var(--accent-2)) !important; }
+.mega-panel{ background:var(--bg) !important; border-top:1px solid var(--line) !important; }
+
+.border, .table, .list, hr{ border-color:var(--line) !important; }
+.text-muted{ color:var(--muted) !important; }
+.page-title{ color:var(--text) !important; }
+.page-desc{ color:var(--muted) !important; }

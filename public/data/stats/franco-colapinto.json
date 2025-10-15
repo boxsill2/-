@@ -1,0 +1,27 @@
+{
+  "season": {
+    "season_position": "20",
+    "season_points": 0,
+    "gp_races": 11,
+    "gp_points": 0,
+    "gp_podiums": 0,
+    "gp_top10": 0,
+    "dnfs": 0,
+    "sp_races": 3,
+    "sp_points": 108,
+    "sp_podiums": 9,
+    "sp_top10": 30
+  },
+  "career": {
+    "gp_entered": 20,
+    "career_points": 5,
+    "best_finish": "8",
+    "podiums": 0,
+    "best_grid": "8",
+    "poles": 0,
+    "titles": 0,
+    "dnfs": 3
+  },
+  "_source": "jolpica-f1",
+  "_generatedAt": "2025-09-26T05:52:51.442759Z"
+}

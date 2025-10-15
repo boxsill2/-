@@ -1,0 +1,30 @@
+{
+  "season": {
+    "season_year": 2025,
+    "season_position": 3,
+    "season_points": 273,
+    "gp_races": 18,
+    "gp_points": 259,
+    "gp_podiums": 9,
+    "gp_top10s": 17,
+    "wins": 4,
+    "dnfs": 1,
+    "best_grid": 1,
+    "poles": 6,
+    "sprint_races": 0,
+    "sprint_points": 0,
+    "sprint_podiums": 0,
+    "sprint_poles": 0,
+    "sprint_top10s": 0
+  },
+  "career": {
+    "gp_entered": 100,
+    "points": 905,
+    "best_finish": "1 (x7)",
+    "podiums": 29,
+    "best_grid": 1,
+    "poles": 1,
+    "world_championships": 0,
+    "dnfs": 21
+  }
+}

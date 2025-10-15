@@ -1,0 +1,121 @@
+[
+  {
+    "session_key": 9693,
+    "country_name": "Australia",
+    "meeting_name": null,
+    "date_start": "2025-03-16T04:00:00+00:00",
+    "circuit_short_name": "Melbourne"
+  },
+  {
+    "session_key": 9998,
+    "country_name": "China",
+    "meeting_name": null,
+    "date_start": "2025-03-23T07:00:00+00:00",
+    "circuit_short_name": "Shanghai"
+  },
+  {
+    "session_key": 10006,
+    "country_name": "Japan",
+    "meeting_name": null,
+    "date_start": "2025-04-06T05:00:00+00:00",
+    "circuit_short_name": "Suzuka"
+  },
+  {
+    "session_key": 10014,
+    "country_name": "Bahrain",
+    "meeting_name": null,
+    "date_start": "2025-04-13T15:00:00+00:00",
+    "circuit_short_name": "Sakhir"
+  },
+  {
+    "session_key": 10022,
+    "country_name": "Saudi Arabia",
+    "meeting_name": null,
+    "date_start": "2025-04-20T17:00:00+00:00",
+    "circuit_short_name": "Jeddah"
+  },
+  {
+    "session_key": 10033,
+    "country_name": "United States",
+    "meeting_name": null,
+    "date_start": "2025-05-04T20:00:00+00:00",
+    "circuit_short_name": "Miami"
+  },
+  {
+    "session_key": 9987,
+    "country_name": "Italy",
+    "meeting_name": null,
+    "date_start": "2025-05-18T13:00:00+00:00",
+    "circuit_short_name": "Imola"
+  },
+  {
+    "session_key": 9979,
+    "country_name": "Monaco",
+    "meeting_name": null,
+    "date_start": "2025-05-25T13:00:00+00:00",
+    "circuit_short_name": "Monte Carlo"
+  },
+  {
+    "session_key": 9971,
+    "country_name": "Spain",
+    "meeting_name": null,
+    "date_start": "2025-06-01T13:00:00+00:00",
+    "circuit_short_name": "Catalunya"
+  },
+  {
+    "session_key": 9963,
+    "country_name": "Canada",
+    "meeting_name": null,
+    "date_start": "2025-06-15T18:00:00+00:00",
+    "circuit_short_name": "Montreal"
+  },
+  {
+    "session_key": 9955,
+    "country_name": "Austria",
+    "meeting_name": null,
+    "date_start": "2025-06-29T13:00:00+00:00",
+    "circuit_short_name": "Spielberg"
+  },
+  {
+    "session_key": 9947,
+    "country_name": "United Kingdom",
+    "meeting_name": null,
+    "date_start": "2025-07-06T14:00:00+00:00",
+    "circuit_short_name": "Silverstone"
+  },
+  {
+    "session_key": 9939,
+    "country_name": "Belgium",
+    "meeting_name": null,
+    "date_start": "2025-07-27T13:00:00+00:00",
+    "circuit_short_name": "Spa-Francorchamps"
+  },
+  {
+    "session_key": 9928,
+    "country_name": "Hungary",
+    "meeting_name": null,
+    "date_start": "2025-08-03T13:00:00+00:00",
+    "circuit_short_name": "Hungaroring"
+  },
+  {
+    "session_key": 9920,
+    "country_name": "Netherlands",
+    "meeting_name": null,
+    "date_start": "2025-08-31T13:00:00+00:00",
+    "circuit_short_name": "Zandvoort"
+  },
+  {
+    "session_key": 9912,
+    "country_name": "Italy",
+    "meeting_name": null,
+    "date_start": "2025-09-07T13:00:00+00:00",
+    "circuit_short_name": "Monza"
+  },
+  {
+    "session_key": 9904,
+    "country_name": "Azerbaijan",
+    "meeting_name": null,
+    "date_start": "2025-09-21T11:00:00+00:00",
+    "circuit_short_name": "Baku"
+  }
+]

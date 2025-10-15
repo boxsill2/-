@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Alpine F1 Team",
+    "slug": "alpine-f1-team",
+    "logo": "/images/teams/alpine-f1-team.png"
+  },
+  {
+    "name": "Aston Martin",
+    "slug": "aston-martin",
+    "logo": "/images/teams/aston-martin.png"
+  },
+  {
+    "name": "Ferrari",
+    "slug": "ferrari",
+    "logo": "/images/teams/ferrari.png"
+  },
+  {
+    "name": "Haas F1 Team",
+    "slug": "haas-f1-team",
+    "logo": "/images/teams/haas-f1-team.png"
+  },
+  {
+    "name": "McLaren",
+    "slug": "mclaren",
+    "logo": "/images/teams/mclaren.png"
+  },
+  {
+    "name": "Mercedes",
+    "slug": "mercedes",
+    "logo": "/images/teams/mercedes.png"
+  },
+  {
+    "name": "RB F1 Team",
+    "slug": "rb-f1-team",
+    "logo": "/images/teams/rb-f1-team.png"
+  },
+  {
+    "name": "Red Bull",
+    "slug": "red-bull",
+    "logo": "/images/teams/red-bull.png"
+  },
+  {
+    "name": "Sauber",
+    "slug": "sauber",
+    "logo": "/images/teams/sauber.png"
+  },
+  {
+    "name": "Williams",
+    "slug": "williams",
+    "logo": "/images/teams/williams.png"
+  }
+]

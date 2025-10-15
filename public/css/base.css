@@ -1,0 +1,82 @@
+/* ============================================
+   Base (F1 공식 다크 톤)
+   - 전역 팔레트/타이포/레이아웃/버튼/카드
+   ============================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap");
+
+/* F1 팔레트 */
+:root{
+  --bg:        #0B0F14;
+  --bg-alt:    #0E1420;
+  --surface:   #0E1420;
+  --surface-2: #111A2B;
+  --line:      #1C2230;
+
+  --text:      #EAEFF7;
+  --muted:     #9FB0C6;
+
+  --accent:    #E10600;
+  --accent-2:  #FF2E1F;
+
+  --radius: 16px;
+  --shadow: 0 12px 30px rgba(0,0,0,.35);
+  --gap:    16px;
+}
+
+/* Reset / Typography */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font:14px/1.6 "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+img{ max-width:100%; display:block; }
+a{ color:var(--text); text-decoration:none; }
+a:hover{ color:#fff; }
+
+/* Layout helpers */
+.container{ max-width:1200px; margin:28px auto; padding:0 20px; }
+.page-title{ font-size:28px; font-weight:800; letter-spacing:.2px; margin:6px 0; }
+.page-desc{ color:var(--muted); margin:0 0 14px; }
+
+.grid{ display:grid; gap:var(--gap); }
+.grid--cards{ grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); }
+.grid--wide { grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); }
+
+/* Card */
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.card:hover{ background:var(--surface-2); }
+
+/* Buttons */
+.btn{
+  display:inline-block; text-decoration:none; border-radius:12px;
+  border:1px solid var(--line); padding:10px 14px; font-weight:700; letter-spacing:.2px;
+  background:#131A28; color:var(--text);
+  transition:transform .12s ease, background .12s ease, border-color .12s ease, filter .12s ease;
+}
+.btn:hover{ transform:translateY(-1px); background:#162036; border-color:#263048; }
+.btn--primary{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-color:transparent; color:#fff; }
+.btn--primary:hover{ filter:brightness(1.03); }
+.btn--ghost{ background:transparent; border:1px solid var(--line); color:var(--text); }
+.btn--ghost:hover{ background:#131B2B; }
+
+/* Badges */
+.pill{ display:inline-block; padding:6px 10px; border-radius:999px; background:#121A2B; border:1px solid var(--line); color:var(--text); font-weight:600; }
+
+/* Utils */
+.text-muted{ color:var(--muted); }
+.border{ border:1px solid var(--line); border-radius:12px; }
+.bg-surface{ background:var(--surface); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *{ transition:none !important; animation:none !important; }
+}

@@ -1,0 +1,144 @@
+/* ============================================
+   Header (F1 톤) — public/css/header-style.css
+   - 상단 고정 헤더 + 하단 레드 하이라이트
+   - 'Drivers / Teams' 메가 드롭다운 (헤더 바로 아래 전체폭)
+   - 모바일 햄버거 메뉴
+   ============================================ */
+
+:root{
+  --bg:        #0B0F14;   /* 메가패널/바탕 */
+  --surface:   #0E1420;   /* 헤더/드롭다운 배경 */
+  --line:      #1C2230;   /* 경계선 */
+  --text:      #EAEFF7;   /* 기본 텍스트 */
+  --muted:     #9FB0C6;   /* 보조 텍스트 */
+  --accent:    #E10600;   /* F1 Red */
+  --accent-2:  #FF2E1F;   /* F1 Red 그라데이션 */
+}
+
+/* Header bar */
+.site-header{
+  position:sticky; top:0; z-index:1000;
+  background:#0A0E13;
+  backdrop-filter:saturate(120%) blur(6px);
+  border-bottom:1px solid var(--line);
+}
+.site-header .nav{
+  max-width:1200px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 22px;
+}
+
+/* Logo */
+.site-header .logo{
+  display:flex; align-items:center; gap:10px; text-decoration:none;
+  color:#fff; font-weight:700; letter-spacing:.4px;
+}
+.site-header .logo::before{
+  content:""; width:18px; height:18px; display:inline-block;
+  background:linear-gradient(45deg, var(--accent), var(--accent-2));
+  border-radius:3px; transform:skewX(-12deg);
+}
+
+/* Toggle (mobile) */
+.site-header .nav-toggle{
+  display:none; background:none; border:0; color:#fff; font-size:20px; cursor:pointer;
+}
+
+/* Primary menu */
+.site-header .nav-menu{
+  list-style:none; display:flex; gap:22px; margin:0; padding:0;
+}
+.site-header .nav-item{ position:relative; }
+.site-header .nav-item > a{
+  text-decoration:none; color:#E7ECFF;
+  text-transform:uppercase; letter-spacing:.6px;
+  padding:10px 6px; display:inline-block; font-weight:600;
+}
+
+/* 하단 레드 바 */
+.site-header .nav-item::after{
+  content:""; position:absolute; left:0; right:0; bottom:-13px; height:3px;
+  background:linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform:scaleX(0); transform-origin:left; transition:transform .15s ease;
+}
+.site-header .nav-item.active::after,
+.site-header .nav-item:hover::after{ transform:scaleX(1); }
+
+/* Mega dropdown panel */
+.mega-panel{
+  position:absolute; left:0; right:0; top:100%;
+  background:var(--bg);
+  border-top:1px solid var(--line);
+  display:none; z-index:1200;
+  max-height:420px; overflow:auto;
+}
+.site-header.mega-open .mega-panel.active{ display:block; }
+
+.mega-panel::-webkit-scrollbar{ height:8px; width:8px }
+.mega-panel::-webkit-scrollbar-thumb{ background:#2a3244; border-radius:8px }
+
+.mega-wrap{
+  max-width:1200px; margin:0 auto; padding:22px 24px 26px;
+}
+.mega-grid{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:24px;
+}
+.mega-col{ display:flex; flex-direction:column; gap:10px; }
+
+/* 항목 */
+.mega-item{
+  display:flex; align-items:center; gap:10px;
+  text-decoration:none; color:var(--text);
+  padding:8px; border-radius:8px;
+}
+.mega-item:hover{ background:#151F33; }
+.mega-item .label{ font-weight:600 }
+.mega-item .label strong{ font-weight:800 }
+
+/* 아바타(이미지/이니셜) */
+.avatar{
+  width:36px; height:36px; border-radius:50%;
+  background:#111B2E; border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  font-weight:800; color:#EAEFF7;
+}
+.avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+/* 패널 하단 액션 */
+.mega-actions{ margin-top:16px; display:flex; gap:12px; }
+.btn{ display:inline-block; padding:8px 12px; border-radius:10px; text-decoration:none; font-weight:700; }
+.btn--ghost{ background:transparent; border:1px solid var(--line); color:var(--text); }
+.btn--ghost:hover{ background:#131B2B }
+
+/* Mobile */
+@media (max-width: 960px){
+  .site-header .nav{ padding:12px 16px; }
+  .site-header .nav-toggle{ display:block; }
+
+  .site-header .nav-menu{
+    position:absolute; top:60px; left:0; right:0;
+    background:#0A0E13; border-top:1px solid var(--line);
+    display:none; flex-direction:column; gap:0;
+  }
+  .site-header .nav-menu.open{ display:flex; }
+  .site-header .nav-item > a{ padding:14px 18px; }
+
+  /* 메가 패널은 모바일에서 사용하지 않음 */
+  .mega-panel{ display:none !important; }
+}
+
+/* Focus ring */
+.site-header a:focus{
+  outline:2px solid rgba(225,6,0,.65); outline-offset:2px; border-radius:6px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .site-header .nav-item::after,
+  .mega-panel{ transition:none; }
+}
+
+/* 주의: 다른 CSS에 아래가 남아 있으면 동작 꼬임
+   .has-submenu:hover > .submenu { ... }  ← 제거!
+   .nav-menu { display:none }              ← 전역 숨김 금지(모바일은 위 미디어쿼리)
+*/

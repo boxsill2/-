@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title><%= info?.name || 'Team' %> - 팀 상세</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="/css/base.css?v=f1" />
+  <link rel="stylesheet" href="/css/header-style.css?v=f1" />
+  <link rel="stylesheet" href="/css/team-detail-style.css?v=f1" />
+</head>
+<body class="theme-f1 team-detail-page">
+  <%- include('partials/header', { currentPage: 'teams' }) %>
+
+  <main class="container">
+    <% if (error) { %>
+      <div class="card"><p><%= error %></p></div>
+    <% } else if (info) { %>
+      <header class="page-header" style="text-align: left; border-bottom: 1px solid var(--line); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <img src="<%= info.logoUrl %>" alt="<%= info.name %> 로고" style="width: 80px; height: 80px; object-fit: contain;">
+          <div>
+            <h1 class="page-title" style="margin: 0;"><%= info.koreanName || info.name %></h1>
+            <p class="page-desc" style="margin: 5px 0 0;"><%= info.name %></p>
+          </div>
+        </div>
+      </header>
+      
+      <section>
+        <h2>소속 드라이버</h2>
+        <div class="grid grid--wide">
+            <% (info.drivers || []).forEach(driver => { %>
+                <a href="/drivers/<%= slugify(driver) %>" class="card" style="padding: 1rem; text-decoration: none;">
+                    <h3 style="margin: 0;"><%= driver %></h3>
+                </a>
+            <% }) %>
+        </div>
+      </section>
+
+    <% } %>
+  </main>
+</body>
+</html>

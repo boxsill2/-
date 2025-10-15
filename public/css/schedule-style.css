@@ -1,0 +1,105 @@
+/* public/css/schedule-style.css */
+
+body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: 'Titillium Web', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+
+.title-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 1.5rem;
+}
+
+.title-header h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 1px;
+    color: #e10600; /* F1 Red */
+}
+
+.title-header p {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-top: 0.5rem;
+}
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.race-card {
+    background-color: #2a2a2a;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #444;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.race-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.race-info .round {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #e10600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.race-info h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.race-info p {
+    margin: 0.2rem 0 0.5rem 0;
+    color: #aaa;
+}
+
+.race-info .date {
+    font-size: 1rem;
+    color: #ddd;
+}
+
+.replay-link {
+    display: inline-block;
+    background-color: #e10600;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background-color 0.2s ease;
+}
+
+.replay-link:hover {
+    background-color: #b80500;
+}
+
+.replay-link.disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+

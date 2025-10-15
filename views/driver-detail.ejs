@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title><%= info?.korean_name || info?.full_name || 'Driver' %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/css/base.css?v=f1" />
+  <link rel="stylesheet" href="/css/header-style.css?v=f1" />
+  <link rel="stylesheet" href="/css/driver-style.css?v=f1" />
+  <style>
+    .driver-description {
+      opacity: 0.9;
+      line-height: 1.6;
+      margin: 12px 0;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body class="theme-f1 driver-detail-page">
+  <%- include('partials/header', { currentPage:'drivers' }) %>
+
+  <main class="container">
+    <section class="page-header">
+      <h1 class="page-title"><%= info?.korean_name || info?.full_name || 'Driver' %></h1>
+    </section>
+
+    <% if (error) { %>
+      <p class="page-desc" style="opacity:.85"><%= error %></p>
+    <% } %>
+
+    <% if (info) { %>
+      <section class="driver-hero">
+        <div class="driver-photo driver-photo--full">
+          <% if (info.photo_src) { %>
+            <img src="<%= info.photo_src %>" alt="<%= info.full_name %>"
+                 loading="lazy" decoding="async"
+                 onerror="this.remove()" />
+          <% } else { %>
+            <div class="avatar-fallback"><%= info.initials %></div>
+          <% } %>
+        </div>
+
+        <div>
+          <h2 class="driver-name"><%= info.korean_name || info.full_name %></h2>
+          <p class="driver-team">
+            <% if (info.team_logo) { %>
+              <img class="team-logo" src="<%= info.team_logo %>" alt="<%= info.team_name %>"
+                   style="width: 20px; height: 20px; vertical-align: middle; margin-right: 5px; border-radius: 4px;"
+                   onerror="this.style.display='none'">
+            <% } %>
+            <%= info.team_name || '팀 정보 없음' %>
+            <% if (info.number) { %> · 등번호 <strong>#<%= info.number %></strong><% } %>
+          </p>
+
+          <% if (description) { %>
+            <p class="driver-description"><%= description %></p>
+          <% } %>
+        </div>
+      </section>
+
+      <section class="stats-wrap">
+        <article class="stats-card">
+          <h3><%= new Date().getFullYear() %> 시즌</h3>
+          <ul class="stat-list">
+            <li class="stat-row"><span class="k">시즌 순위</span><span class="v"><%= season?.season_position ?? '-' %></span></li>
+            <li class="stat-row"><span class="k">시즌 포인트</span><span class="v"><%= season?.season_points ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">그랑프리 출전</span><span class="v"><%= season?.gp_races ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">그랑프리 포인트</span><span class="v"><%= season?.gp_points ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">그랑프리 포디움</span><span class="v"><%= season?.gp_podiums ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">그랑프리 TOP 10</span><span class="v"><%= season?.gp_top10 ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">리타이어(DNF)</span><span class="v"><%= season?.dnfs ?? 0 %></span></li>
+          </ul>
+        </article>
+
+        <article class="stats-card">
+          <h3>커리어 통계</h3>
+          <ul class="stat-list">
+            <li class="stat-row"><span class="k">통산 출전 (GP)</span><span class="v"><%= career?.gp_entered ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">통산 포인트</span><span class="v"><%= career?.career_points ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">최고 결승 순위</span><span class="v"><%= career?.best_finish ?? '-' %></span></li>
+            <li class="stat-row"><span class="k">포디움</span><span class="v"><%= career?.podiums ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">최고 그리드</span><span class="v"><%= career?.best_grid ?? '-' %></span></li>
+            <li class="stat-row"><span class="k">폴 포지션</span><span class="v"><%= career?.poles ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">월드 챔피언</span><span class="v"><%= career?.titles ?? 0 %></span></li>
+            <li class="stat-row"><span class="k">DNFs</span><span class="v"><%= career?.dnfs ?? 0 %></span></li>
+          </ul>
+        </article>
+      </section>
+    <% } %>
+  </main>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<header class="site-header">
+  <nav class="nav" role="navigation" aria-label="주 메뉴">
+    <a class="logo" href="/">F1 스탯</a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="navMenu" aria-label="메뉴 열기">☰</button>
+    <ul id="navMenu" class="nav-menu">
+      <li class="nav-item <%= currentPage==='schedule' ? 'active' : '' %>"><a href="/schedule">일정</a></li>
+      <li class="nav-item has-mega <%= currentPage==='drivers' ? 'active' : '' %>" data-panel="drivers">
+        <a href="/drivers" aria-haspopup="true" aria-expanded="false">드라이버</a>
+      </li>
+      <li class="nav-item has-mega <%= currentPage==='teams' ? 'active' : '' %>" data-panel="teams">
+        <a href="/teams" aria-haspopup="true" aria-expanded="false">팀</a>
+      </li>
+      <li class="nav-item <%= currentPage==='glossary' ? 'active' : '' %>"><a href="/glossary">용어집</a></li>
+    </ul>
+  </nav>
+
+  <div class="mega-panel" id="mega-drivers" aria-hidden="true">
+    <div class="mega-wrap">
+      <div class="mega-grid" id="mega-drivers-grid"></div>
+      <div class="mega-actions"><a class="btn btn--ghost" href="/drivers">전체 드라이버</a></div>
+    </div>
+  </div>
+
+  <div class="mega-panel" id="mega-teams" aria-hidden="true">
+    <div class="mega-wrap">
+      <div class="mega-grid" id="mega-teams-grid"></div>
+      <div class="mega-actions"><a class="btn btn--ghost" href="/teams">전체 팀</a></div>
+    </div>
+  </div>
+</header>
+
+<script>
+  (function () {
+    const header = document.querySelector('.site-header');
+    const menu   = document.getElementById('navMenu');
+    const toggle = document.querySelector('.nav-toggle');
+
+    // 모바일 햄버거 메뉴
+    if (toggle && menu) {
+      toggle.addEventListener('click', () => {
+        const exp = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!exp));
+        menu.classList.toggle('open');
+      });
+    }
+
+    // --- 메가 드롭다운 로직 ---
+    const triggers = Array.from(document.querySelectorAll('.has-mega'));
+    const panels = {
+      drivers: document.getElementById('mega-drivers'),
+      teams:   document.getElementById('mega-teams'), // 팀 패널 추가
+    };
+    let openKey = null, openTimer, closeTimer;
+    const openDelay = 90, closeDelay = 140;
+
+    function setAriaExpanded(key, val) {
+      const li = triggers.find(t => t.dataset.panel === key);
+      if (li) {
+        const a = li.querySelector(':scope > a');
+        if (a) a.setAttribute('aria-expanded', String(val));
+      }
+    }
+
+    function showPanel(key) {
+      if (openKey === key) return;
+      hidePanel();
+      const p = panels[key];
+      if (!p) return;
+      openKey = key;
+      header.classList.add('mega-open');
+      p.classList.add('active');
+      p.setAttribute('aria-hidden', 'false');
+      setAriaExpanded(key, true);
+    }
+
+    function hidePanel() {
+      if (!openKey) return;
+      const p = panels[openKey];
+      if (p) {
+        p.classList.remove('active');
+        p.setAttribute('aria-hidden', 'true');
+      }
+      setAriaExpanded(openKey, false);
+      header.classList.remove('mega-open');
+      openKey = null;
+    }
+
+    function scheduleShow(key) { clearTimeout(openTimer); clearTimeout(closeTimer); openTimer = setTimeout(() => showPanel(key), openDelay); }
+    function scheduleHide() { clearTimeout(openTimer); clearTimeout(closeTimer); closeTimer = setTimeout(hidePanel, closeDelay); }
+
+    triggers.forEach(li => {
+      const key = li.dataset.panel;
+      li.addEventListener('pointerenter', () => scheduleShow(key));
+      li.addEventListener('pointerleave', scheduleHide);
+    });
+    
+    Object.values(panels).forEach(p => {
+        if (p) {
+            p.addEventListener('pointerenter', () => clearTimeout(closeTimer));
+            p.addEventListener('pointerleave', scheduleHide);
+        }
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePanel(); });
+
+    // --- 데이터 로딩 및 HTML 생성 로직 ---
+    async function fetchJson(url) {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error(url + ' HTTP ' + r.status);
+      return r.json();
+    }
+
+    function toArray(data) {
+        if (Array.isArray(data)) return data;
+        if (data && typeof data === 'object') {
+            if (Array.isArray(data.drivers)) return data.drivers;
+            if (Array.isArray(data.teams)) return data.teams;
+        }
+        return [];
+    }
+
+    const initials = (name) => String(name || '').trim().split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase();
+
+    function buildDrivers(raw) {
+      const root = document.getElementById('mega-drivers-grid');
+      if (!root) return;
+      const list = toArray(raw);
+      root.innerHTML = '';
+      if (!list.length) return;
+
+      const cols = [[],[],[],[]];
+      list.forEach((d,i) => cols[i%4].push(d));
+      cols.forEach(col => {
+          const c = document.createElement('div');
+          c.className = 'mega-col';
+          col.forEach(d => {
+              const name = d.full_name || d.name || '';
+              const item = document.createElement('a');
+              item.className = 'mega-item';
+              item.href = `/drivers/${d.slug}`;
+              const av = document.createElement('span');
+              av.className = 'avatar';
+              if(d.photo_src) {
+                  const img = document.createElement('img');
+                  img.src = d.photo_src;
+                  img.alt = name;
+                  img.onerror = () => { av.innerHTML = initials(name); };
+                  av.appendChild(img);
+              } else {
+                  av.innerHTML = initials(name);
+              }
+              const label = document.createElement('span');
+              label.className = 'label';
+              label.textContent = name;
+              item.appendChild(av);
+              item.appendChild(label);
+              c.appendChild(item);
+          });
+          root.appendChild(c);
+      });
+    }
+
+    function buildTeams(raw) {
+        const root = document.getElementById('mega-teams-grid');
+        if (!root) return;
+        const list = toArray(raw);
+        root.innerHTML = '';
+        if (!list.length) return;
+
+        const cols = [[],[],[],[]];
+        list.forEach((t, i) => cols[i % 4].push(t));
+        cols.forEach(col => {
+            const c = document.createElement('div');
+            c.className = 'mega-col';
+            col.forEach(t => {
+                const name = t.name || 'Team';
+                const item = document.createElement('a');
+                item.className = 'mega-item';
+                item.href = `/teams/${t.slug}`;
+                const av = document.createElement('span');
+                av.className = 'avatar';
+                if(t.logo) {
+                    const img = document.createElement('img');
+                    img.src = t.logo;
+                    img.alt = name;
+                    img.onerror = () => { av.innerHTML = initials(name); };
+                    av.appendChild(img);
+                } else {
+                    av.innerHTML = initials(name);
+                }
+                const label = document.createElement('span');
+                label.className = 'label';
+                label.textContent = name;
+                item.appendChild(av);
+                item.appendChild(label);
+                c.appendChild(item);
+            });
+            root.appendChild(c);
+        });
+    }
+
+    const loaded = { drivers: false, teams: false };
+    async function loadOnce(key) {
+      try {
+        if (loaded[key]) return;
+        if (key === 'drivers') {
+          const data = await fetchJson('/data/drivers.json');
+          buildDrivers(data);
+        } else if (key === 'teams') {
+          const data = await fetchJson('/data/teams.json');
+          buildTeams(data);
+        }
+        loaded[key] = true;
+      } catch (e) {
+        console.error(`Failed to load ${key}:`, e);
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadOnce('drivers');
+        loadOnce('teams');
+    });
+
+    triggers.forEach(li => {
+      const key = li.dataset.panel;
+      li.addEventListener('pointerenter', () => loadOnce(key));
+    });
+  })();
+</script>

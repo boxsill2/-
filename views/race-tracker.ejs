@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Race Replay - <%= session_key %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="/css/base.css?v=f1">
+    <link rel="stylesheet" href="/css/header-style.css?v=f1">
+    <link rel="stylesheet" href="/css/race-tracker-style.css?v=f1">
+    <style>
+      #track-message-overlay {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        padding: 20px; text-align: center; background: rgba(0,0,0,0.8);
+        border-radius: 12px; display: none; z-index: 10;
+        max-width: 80%;
+      }
+      .leaderboard-row .driver-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .leaderboard-row .pos { font-weight: bold; text-align: center; }
+      .leaderboard-row .team-color-indicator {
+        width: 6px; height: 16px; border-radius: 3px; display: inline-block;
+        margin-right: 8px; vertical-align: middle;
+      }
+      .driver-status-tag {
+        font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 4px;
+        color: #000; margin-left: 8px;
+      }
+      .driver-status-tag.drs { background-color: #00D2BE; }
+      .driver-status-tag.pit, .driver-status-tag.dnf, .driver-status-tag.brake { background-color: #FFD700; }
+      .text-muted { color: #888; font-size: 0.9em; margin-left: 4px; }
+    </style>
+</head>
+<body>
+<%- include('partials/header', { currentPage: 'schedule' }) %>
+<main class="container">
+    <div class="title-header"><h1>Race Replay: <%= sessionInfo?.meeting_name || sessionInfo?.country_name || session_key %></h1></div>
+    
+    <div class="replay-layout">
+        <div id="track-container">
+            <canvas id="trackCanvas"></canvas>
+            <div id="track-message-overlay"></div>
+        </div>
+        <div class="leaderboard">
+            <div class="leaderboard-header" style="grid-template-columns: 40px 1fr auto;">
+                <span style="text-align: center;">Pos</span>
+                <span>Driver</span>
+                <span>Status</span>
+            </div>
+            <div id="leaderboard-body"></div>
+        </div>
+    </div>
+    
+    <div class="timeline-controls">
+        <button id="playPauseBtn" class="play-pause-btn">▶</button>
+        <span id="currentTime" class="timeline-time">00:00:00</span>
+        <input type="range" id="timelineSlider" class="timeline-slider" min="0" value="0">
+        <span id="totalTime" class="timeline-time">00:00:00</span>
+    </div>
+</main>
+
+<script id="__session_info" type="application/json"><%- JSON.stringify(sessionInfo || null) %></script>
+<script id="__driver_directory" type="application/json"><%- JSON.stringify(driverDirectory || {}) %></script>
+
+<script>
+    const SESSION_INFO = JSON.parse(document.getElementById('__session_info').textContent);
+    const DRIVER_DIRECTORY = JSON.parse(document.getElementById('__driver_directory').textContent);
+    const canvas = document.getElementById('trackCanvas'), ctx = canvas.getContext('2d');
+    const timelineSlider = document.getElementById('timelineSlider'), currentTimeEl = document.getElementById('currentTime'), totalTimeEl = document.getElementById('totalTime');
+    const playPauseBtn = document.getElementById('playPauseBtn'), leaderboardBody = document.getElementById('leaderboard-body'), messageOverlay = document.getElementById('track-message-overlay');
+    
+    const PADDING = 40;
+    const raceDuration = 7200000;
+    const CHUNK_DURATION_MS = 30000;
+    const BUFFER_THRESHOLD_MS = 10000;
+    
+    let bbox = null; 
+    let initialAngle = 0;
+    let angleCalculated = false;
+
+    let playbackState = {
+        isPlaying: false, currentTimeMs: 0, lastSystemTime: 0,
+        isBuffering: false, bufferedUntilMs: 0,
+        locationBuffer: [], positionBuffer: [], carDataBuffer: [], raceControlBuffer: []
+    };
+    const trackPath = new Map();
+    const dnfDrivers = new Set();
+
+    const msToTime = ms => { const h=String(Math.floor(ms/3600000)).padStart(2,'0'),m=String(Math.floor((ms%3600000)/60000)).padStart(2,'0'),s=String(Math.floor((ms%60000)/1000)).padStart(2,'0'); return `${h}:${m}:${s}`; };
+    const showMessage = (text) => { messageOverlay.textContent = text; messageOverlay.style.display = 'block'; };
+    const hideMessage = () => { messageOverlay.style.display = 'none'; };
+
+    const rotatePoint = (x, y, angle) => ({
+        x: x * Math.cos(angle) - y * Math.sin(angle),
+        y: x * Math.sin(angle) + y * Math.cos(angle)
+    });
+
+    function updateBboxAndAngle(newLocations) {
+        if (!newLocations || newLocations.length === 0) return;
+        
+        // 1. 출발 각도 계산 (최초 1회만 실행)
+        if (!angleCalculated && playbackState.locationBuffer.length > 1) {
+            const p1 = playbackState.locationBuffer[0];
+            const p2 = playbackState.locationBuffer.find(p => p.x !== p1.x || p.y !== p1.y);
+            if (p1 && p2) {
+                // p1에서 p2로 향하는 벡터의 각도를 계산하여 0도(오른쪽)로 만드는 회전각을 구함
+                initialAngle = -Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                angleCalculated = true;
+                bbox = null; // 각도가 정해졌으니 Bbox를 리셋하여 다시 계산
+            }
+        }
+
+        // 2. Bbox 업데이트
+        const tempBbox = bbox || { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+        
+        newLocations.forEach(loc => {
+            const rotated = rotatePoint(loc.x, loc.y, initialAngle);
+            if (rotated.x > tempBbox.maxX) tempBbox.maxX = rotated.x;
+            if (rotated.x < tempBbox.minX) tempBbox.minX = rotated.x;
+            if (rotated.y > tempBbox.maxY) tempBbox.maxY = rotated.y;
+            if (rotated.y < tempBbox.minY) tempBbox.minY = rotated.y;
+        });
+        bbox = tempBbox;
+    }
+    
+    async function fetchNextChunk() {
+        if (playbackState.isBuffering || !SESSION_INFO?.date_start) return false;
+        if (playbackState.bufferedUntilMs >= raceDuration) return true;
+
+        playbackState.isBuffering = true;
+        if (playbackState.locationBuffer.length === 0) showMessage('데이터 로딩 중...');
+        
+        const startTime = new Date(SESSION_INFO.date_start);
+        const chunkStartMs = playbackState.bufferedUntilMs;
+        const chunkEndMs = Math.min(chunkStartMs + CHUNK_DURATION_MS, raceDuration);
+        const chunkStartTime = new Date(startTime.getTime() + chunkStartMs).toISOString();
+        const chunkEndTime = new Date(startTime.getTime() + chunkEndMs).toISOString();
+        
+        try {
+            const response = await fetch(`/api/locations/<%= session_key %>/${chunkStartTime}/${chunkEndTime}`);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            if (playbackState.bufferedUntilMs === 0 && (!data.locations || data.locations.length === 0)) {
+                throw new Error("이 경기에 대한 주행 데이터가 없습니다.");
+            }
+
+            const { locations, positions, car_data, race_control } = data;
+            if (locations?.length) {
+                playbackState.locationBuffer.push(...locations);
+                updateBboxAndAngle(locations); // 새 데이터로 Bbox와 각도 업데이트
+                locations.forEach(loc => {
+                    if (!trackPath.has(loc.driver_number)) trackPath.set(loc.driver_number, []);
+                    trackPath.get(loc.driver_number).push({ x: loc.x, y: loc.y });
+                });
+            }
+            if (positions?.length) playbackState.positionBuffer.push(...positions);
+            if (car_data?.length) playbackState.carDataBuffer.push(...car_data);
+            if (race_control?.length) {
+                playbackState.raceControlBuffer.push(...race_control);
+                race_control.forEach(msg => {
+                    if (msg.category === 'Retirement' && msg.driver_number) dnfDrivers.add(msg.driver_number);
+                });
+            }
+            
+            playbackState.bufferedUntilMs = chunkEndMs;
+            hideMessage();
+            return true;
+
+        } catch (error) {
+            console.error('데이터 로딩 실패:', error);
+            showMessage(error.message);
+            playPauseBtn.disabled = true;
+            timelineSlider.disabled = true;
+            return false;
+        } finally {
+            playbackState.isBuffering = false;
+        }
+    }
+
+    async function togglePlayPause() {
+        if (playbackState.isBuffering) return;
+        if (playbackState.isPlaying) {
+            playbackState.isPlaying = false;
+            playPauseBtn.textContent = '▶';
+            return;
+        }
+        let canPlay = playbackState.bufferedUntilMs > 0;
+        if (!canPlay) canPlay = await fetchNextChunk();
+        if (canPlay) {
+            playbackState.isPlaying = true;
+            playPauseBtn.textContent = '❚❚';
+            playbackState.lastSystemTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+    }
+    
+    function gameLoop(now) {
+        if (!playbackState.isPlaying) return;
+        if (!playbackState.lastSystemTime) playbackState.lastSystemTime = now;
+        const deltaTime = now - playbackState.lastSystemTime;
+        playbackState.lastSystemTime = now;
+        playbackState.currentTimeMs += deltaTime;
+        if (playbackState.currentTimeMs >= raceDuration) {
+            playbackState.currentTimeMs = raceDuration;
+            togglePlayPause();
+        }
+        updateUI(playbackState.currentTimeMs);
+        if (playbackState.isPlaying && !playbackState.isBuffering && (playbackState.bufferedUntilMs - playbackState.currentTimeMs) < BUFFER_THRESHOLD_MS) {
+            fetchNextChunk();
+        }
+        if (playbackState.isPlaying) {
+            requestAnimationFrame(gameLoop);
+        }
+    }
+    
+    function updateUI(timeMs) {
+        timelineSlider.value = timeMs;
+        currentTimeEl.textContent = msToTime(timeMs);
+        drawOnCanvas();
+    }
+    
+    function drawOnCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#181820';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        if (!SESSION_INFO?.date_start || !bbox) {
+            return;
+        }
+        
+        const targetTime = new Date(new Date(SESSION_INFO.date_start).getTime() + playbackState.currentTimeMs);
+        const latestLocations = {};
+        for(const loc of playbackState.locationBuffer) { 
+            if (new Date(loc.date) > targetTime) break; 
+            latestLocations[loc.driver_number] = loc;
+        }
+        
+        const trackWidth = bbox.maxX - bbox.minX;
+        const trackHeight = bbox.maxY - bbox.minY;
+        const canvasDrawableWidth = canvas.width - (PADDING * 2);
+        const canvasDrawableHeight = canvas.height - (PADDING * 2);
+        const scaleX = trackWidth > 0 ? canvasDrawableWidth / trackWidth : 1;
+        const scaleY = trackHeight > 0 ? canvasDrawableHeight / trackHeight : 1;
+        const scale = Math.min(scaleX, scaleY) * 0.95; // 약간의 추가 여백
+        
+        const offsetX = (canvas.width - (trackWidth * scale)) / 2 - (bbox.minX * scale);
+        const offsetY = (canvas.height + (trackHeight * scale)) / 2 - (bbox.maxY * scale);
+
+        const transform = (x, y) => {
+            const rotated = rotatePoint(x, y, initialAngle);
+            return { 
+                x: rotated.x * scale + offsetX, 
+                y: -rotated.y * scale + offsetY 
+            };
+        };
+
+        // 트랙 그리기
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 5;
+        trackPath.forEach((path) => {
+            if (path.length > 1) {
+                ctx.beginPath();
+                const startPoint = transform(path[0].x, path[0].y);
+                ctx.moveTo(startPoint.x, startPoint.y);
+                path.slice(1).forEach(p => {
+                    const { x, y } = transform(p.x, p.y);
+                    ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            }
+        });
+
+        // 드라이버 그리기
+        for (const driverNumber in latestLocations) {
+            if (dnfDrivers.has(Number(driverNumber))) continue;
+            const pos = latestLocations[driverNumber];
+            const driverInfo = DRIVER_DIRECTORY[driverNumber] || {};
+            const { x: canvasX, y: canvasY } = transform(pos.x, pos.y);
+            
+            ctx.beginPath();
+            ctx.arc(canvasX, canvasY, 10, 0, 2 * Math.PI);
+            ctx.fillStyle = driverInfo.team_colour || '#FFFFFF';
+            ctx.fill();
+        }
+    }
+
+    function initialize() {
+        if (!SESSION_INFO) return showMessage("세션 정보를 불러올 수 없습니다.");
+        
+        timelineSlider.max = raceDuration;
+        totalTimeEl.textContent = msToTime(raceDuration);
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        fetchNextChunk();
+    }
+
+    function resizeCanvas() { 
+        const container = document.getElementById('track-container');
+        if (container) {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawOnCanvas(); 
+        }
+    }
+    
+    initialize();
+</script>
+</body>
+</html>
