@@ -1,30 +1,32 @@
 {
+  "info": {
+    "driverId": "leclerc",
+    "slug": "charles-leclerc",
+    "full_name": "Charles Leclerc",
+    "number": "16",
+    "code": "LEC",
+    "nationality": "Monegasque",
+    "photo_src": "/images/drivers/16.png",
+    "team_name": "Ferrari",
+    "team_colour": "#E8002D"
+  },
   "season": {
-    "season_year": 2025,
-    "season_position": 5,
-    "season_points": 173,
     "gp_races": 18,
-    "gp_points": 164,
+    "gp_points": 164.0,
     "gp_podiums": 5,
-    "gp_top10s": 15,
-    "wins": 0,
+    "gp_top10": 15,
     "dnfs": 2,
-    "best_grid": 1,
-    "poles": 1,
-    "sprint_races": 0,
-    "sprint_points": 0,
-    "sprint_podiums": 0,
-    "sprint_poles": 0,
-    "sprint_top10s": 0
+    "season_position": "5",
+    "season_points": "173"
   },
   "career": {
     "gp_entered": 100,
-    "points": 813,
-    "best_finish": "1 (x5)",
+    "career_points": 813.0,
     "podiums": 23,
+    "dnfs": 18,
+    "poles": 8,
+    "best_finish": 1,
     "best_grid": 1,
-    "poles": 18,
-    "world_championships": 0,
-    "dnfs": 18
+    "titles": 0
   }
 }

@@ -1,27 +1,32 @@
 {
+  "info": {
+    "driverId": "gasly",
+    "slug": "pierre-gasly",
+    "full_name": "Pierre Gasly",
+    "number": "10",
+    "code": "GAS",
+    "nationality": "French",
+    "photo_src": "/images/drivers/10.png",
+    "team_name": "Alpine F1 Team",
+    "team_colour": "#FFFFFF"
+  },
   "season": {
-    "season_position": "16",
-    "season_points": 20,
-    "gp_races": 17,
-    "gp_points": 19,
+    "gp_races": 18,
+    "gp_points": 19.0,
     "gp_podiums": 0,
     "gp_top10": 4,
-    "dnfs": 2,
-    "sp_races": 3,
-    "sp_points": 108,
-    "sp_podiums": 9,
-    "sp_top10": 30
+    "dnfs": 9,
+    "season_position": "16",
+    "season_points": "20"
   },
   "career": {
     "gp_entered": 100,
-    "career_points": 327,
-    "best_finish": "1",
+    "career_points": 327.0,
     "podiums": 3,
-    "best_grid": "0",
-    "poles": 0,
-    "titles": 0,
-    "dnfs": 17
-  },
-  "_source": "jolpica-f1",
-  "_generatedAt": "2025-09-26T05:52:44.477994Z"
+    "dnfs": 18,
+    "poles": 1,
+    "best_finish": 1,
+    "best_grid": 4,
+    "titles": 0
+  }
 }

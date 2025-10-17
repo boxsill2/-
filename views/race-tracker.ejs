@@ -8,25 +8,59 @@
     <link rel="stylesheet" href="/css/header-style.css?v=f1">
     <link rel="stylesheet" href="/css/race-tracker-style.css?v=f1">
     <style>
+      .replay-layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      #track-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16/9;
+        background-color: #181820;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      #trackCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      @media (max-width: 900px) {
+        .replay-layout { grid-template-columns: 1fr; }
+        #track-container { aspect-ratio: 1/1; }
+      }
+
       #track-message-overlay {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        position: absolute;
+        top: 50%; left: 50%; transform: translate(-50%, -50%);
         padding: 20px; text-align: center; background: rgba(0,0,0,0.8);
         border-radius: 12px; display: none; z-index: 10;
         max-width: 80%;
       }
-      .leaderboard-row .driver-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .leaderboard-row {
+        display: grid;
+        grid-template-columns: 40px 1fr auto;
+        align-items: center; padding: 6px 8px; border-radius: 6px;
+      }
+      .leaderboard-row:nth-child(odd) { background-color: rgba(255, 255, 255, 0.03); }
+      .leaderboard-row.dnf { opacity: 0.5; }
       .leaderboard-row .pos { font-weight: bold; text-align: center; }
+      .leaderboard-row .driver-name {
+        display: flex; align-items: center; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis;
+      }
       .leaderboard-row .team-color-indicator {
         width: 6px; height: 16px; border-radius: 3px; display: inline-block;
-        margin-right: 8px; vertical-align: middle;
+        margin-right: 8px; flex-shrink: 0;
       }
       .driver-status-tag {
-        font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 4px;
-        color: #000; margin-left: 8px;
+        font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 4px; color: #000;
       }
-      .driver-status-tag.drs { background-color: #00D2BE; }
-      .driver-status-tag.pit, .driver-status-tag.dnf, .driver-status-tag.brake { background-color: #FFD700; }
-      .text-muted { color: #888; font-size: 0.9em; margin-left: 4px; }
+      .driver-status-tag.dnf { background-color: #FFD700; }
     </style>
 </head>
 <body>
@@ -40,7 +74,7 @@
             <div id="track-message-overlay"></div>
         </div>
         <div class="leaderboard">
-            <div class="leaderboard-header" style="grid-template-columns: 40px 1fr auto;">
+            <div class="leaderboard-header">
                 <span style="text-align: center;">Pos</span>
                 <span>Driver</span>
                 <span>Status</span>
@@ -66,16 +100,14 @@
     const canvas = document.getElementById('trackCanvas'), ctx = canvas.getContext('2d');
     const timelineSlider = document.getElementById('timelineSlider'), currentTimeEl = document.getElementById('currentTime'), totalTimeEl = document.getElementById('totalTime');
     const playPauseBtn = document.getElementById('playPauseBtn'), leaderboardBody = document.getElementById('leaderboard-body'), messageOverlay = document.getElementById('track-message-overlay');
+    const trackContainer = document.getElementById('track-container');
     
     const PADDING = 40;
     const raceDuration = 7200000;
-    const CHUNK_DURATION_MS = 30000;
-    const BUFFER_THRESHOLD_MS = 10000;
+    const CHUNK_DURATION_MS = 120000;
+    const LAP_ESTIMATE_MS = 180000; // 3분으로 1랩 데이터 로드 시간 추정
     
     let bbox = null; 
-    let initialAngle = 0;
-    let angleCalculated = false;
-
     let playbackState = {
         isPlaying: false, currentTimeMs: 0, lastSystemTime: 0,
         isBuffering: false, bufferedUntilMs: 0,
@@ -83,114 +115,78 @@
     };
     const trackPath = new Map();
     const dnfDrivers = new Set();
+    
+    let orientationCalculated = false;
+    let initialAngle = 0;
+    let flipX = 1;
 
     const msToTime = ms => { const h=String(Math.floor(ms/3600000)).padStart(2,'0'),m=String(Math.floor((ms%3600000)/60000)).padStart(2,'0'),s=String(Math.floor((ms%60000)/1000)).padStart(2,'0'); return `${h}:${m}:${s}`; };
     const showMessage = (text) => { messageOverlay.textContent = text; messageOverlay.style.display = 'block'; };
     const hideMessage = () => { messageOverlay.style.display = 'none'; };
-
     const rotatePoint = (x, y, angle) => ({
         x: x * Math.cos(angle) - y * Math.sin(angle),
         y: x * Math.sin(angle) + y * Math.cos(angle)
     });
 
-    function updateBboxAndAngle(newLocations) {
-        if (!newLocations || newLocations.length === 0) return;
-        
-        // 1. 출발 각도 계산 (최초 1회만 실행)
-        if (!angleCalculated && playbackState.locationBuffer.length > 1) {
-            const p1 = playbackState.locationBuffer[0];
-            const p2 = playbackState.locationBuffer.find(p => p.x !== p1.x || p.y !== p1.y);
-            if (p1 && p2) {
-                // p1에서 p2로 향하는 벡터의 각도를 계산하여 0도(오른쪽)로 만드는 회전각을 구함
-                initialAngle = -Math.atan2(p2.y - p1.y, p2.x - p1.x);
-                angleCalculated = true;
-                bbox = null; // 각도가 정해졌으니 Bbox를 리셋하여 다시 계산
+    function calculateOrientationAndBbox(locations) {
+        if (!locations || locations.length < 2) return;
+
+        // 1. 주행 방향 결정 (시계/반시계)
+        const driverNumbers = [...new Set(locations.map(p => p.driver_number))];
+        if (driverNumbers.length > 0) {
+            const path = locations.filter(p => p.driver_number === driverNumbers[0]);
+            if (path.length > 50) {
+                const p1 = path[0];
+                const p2 = path[25];
+                const p3 = path[50];
+                const crossProduct = (p2.x - p1.x) * (p3.y - p2.y) - (p2.y - p1.y) * (p3.x - p2.x);
+                if (crossProduct > 0) {
+                    flipX = -1;
+                }
             }
         }
-
-        // 2. Bbox 업데이트
-        const tempBbox = bbox || { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
         
-        newLocations.forEach(loc => {
-            const rotated = rotatePoint(loc.x, loc.y, initialAngle);
-            if (rotated.x > tempBbox.maxX) tempBbox.maxX = rotated.x;
-            if (rotated.x < tempBbox.minX) tempBbox.minX = rotated.x;
-            if (rotated.y > tempBbox.maxY) tempBbox.maxY = rotated.y;
-            if (rotated.y < tempBbox.minY) tempBbox.minY = rotated.y;
+        // 2. 출발 방향을 오른쪽으로 정렬하기 위한 각도 계산
+        const firstPoint = locations[0];
+        const secondPoint = locations.find(p => p.x !== firstPoint.x || p.y !== firstPoint.y);
+        if(firstPoint && secondPoint) {
+            const dx = (secondPoint.x - firstPoint.x) * flipX;
+            const dy = secondPoint.y - firstPoint.y;
+            initialAngle = -Math.atan2(dy, dx);
+        }
+
+        // 3. 전체 트랙에 대해 변환(반전, 회전)을 적용하여 최종 BBox 계산
+        const tempBbox = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+        locations.forEach(loc => {
+            const flippedX = loc.x * flipX;
+            const rotated = rotatePoint(flippedX, loc.y, initialAngle);
+            tempBbox.minX = Math.min(tempBbox.minX, rotated.x);
+            tempBbox.maxX = Math.max(tempBbox.maxX, rotated.x);
+            tempBbox.minY = Math.min(tempBbox.minY, rotated.y);
+            tempBbox.maxY = Math.max(tempBbox.maxY, rotated.y);
         });
         bbox = tempBbox;
-    }
-    
-    async function fetchNextChunk() {
-        if (playbackState.isBuffering || !SESSION_INFO?.date_start) return false;
-        if (playbackState.bufferedUntilMs >= raceDuration) return true;
+        orientationCalculated = true;
 
-        playbackState.isBuffering = true;
-        if (playbackState.locationBuffer.length === 0) showMessage('데이터 로딩 중...');
-        
-        const startTime = new Date(SESSION_INFO.date_start);
-        const chunkStartMs = playbackState.bufferedUntilMs;
-        const chunkEndMs = Math.min(chunkStartMs + CHUNK_DURATION_MS, raceDuration);
-        const chunkStartTime = new Date(startTime.getTime() + chunkStartMs).toISOString();
-        const chunkEndTime = new Date(startTime.getTime() + chunkEndMs).toISOString();
-        
-        try {
-            const response = await fetch(`/api/locations/<%= session_key %>/${chunkStartTime}/${chunkEndTime}`);
-            const data = await response.json();
-            if (data.error) throw new Error(data.error);
-
-            if (playbackState.bufferedUntilMs === 0 && (!data.locations || data.locations.length === 0)) {
-                throw new Error("이 경기에 대한 주행 데이터가 없습니다.");
-            }
-
-            const { locations, positions, car_data, race_control } = data;
-            if (locations?.length) {
-                playbackState.locationBuffer.push(...locations);
-                updateBboxAndAngle(locations); // 새 데이터로 Bbox와 각도 업데이트
-                locations.forEach(loc => {
-                    if (!trackPath.has(loc.driver_number)) trackPath.set(loc.driver_number, []);
-                    trackPath.get(loc.driver_number).push({ x: loc.x, y: loc.y });
-                });
-            }
-            if (positions?.length) playbackState.positionBuffer.push(...positions);
-            if (car_data?.length) playbackState.carDataBuffer.push(...car_data);
-            if (race_control?.length) {
-                playbackState.raceControlBuffer.push(...race_control);
-                race_control.forEach(msg => {
-                    if (msg.category === 'Retirement' && msg.driver_number) dnfDrivers.add(msg.driver_number);
-                });
-            }
-            
-            playbackState.bufferedUntilMs = chunkEndMs;
-            hideMessage();
-            return true;
-
-        } catch (error) {
-            console.error('데이터 로딩 실패:', error);
-            showMessage(error.message);
-            playPauseBtn.disabled = true;
-            timelineSlider.disabled = true;
-            return false;
-        } finally {
-            playbackState.isBuffering = false;
+        // 4. 트랙 비율에 맞춰 컨테이너 크기 조절
+        const trackWidth = bbox.maxX - bbox.minX;
+        const trackHeight = bbox.maxY - bbox.minY;
+        if (trackHeight > 0 && window.innerWidth > 900) {
+            trackContainer.style.setProperty('--track-aspect-ratio', trackWidth / trackHeight);
         }
     }
 
     async function togglePlayPause() {
-        if (playbackState.isBuffering) return;
         if (playbackState.isPlaying) {
             playbackState.isPlaying = false;
             playPauseBtn.textContent = '▶';
             return;
         }
-        let canPlay = playbackState.bufferedUntilMs > 0;
-        if (!canPlay) canPlay = await fetchNextChunk();
-        if (canPlay) {
-            playbackState.isPlaying = true;
-            playPauseBtn.textContent = '❚❚';
-            playbackState.lastSystemTime = performance.now();
-            requestAnimationFrame(gameLoop);
-        }
+        
+        playbackState.isPlaying = true;
+        playPauseBtn.textContent = '❚❚';
+        playbackState.lastSystemTime = performance.now();
+        requestAnimationFrame(gameLoop);
     }
     
     function gameLoop(now) {
@@ -204,35 +200,64 @@
             togglePlayPause();
         }
         updateUI(playbackState.currentTimeMs);
-        if (playbackState.isPlaying && !playbackState.isBuffering && (playbackState.bufferedUntilMs - playbackState.currentTimeMs) < BUFFER_THRESHOLD_MS) {
-            fetchNextChunk();
-        }
         if (playbackState.isPlaying) {
             requestAnimationFrame(gameLoop);
+        }
+    }
+    
+    function updateLeaderboard(targetTime) {
+        const latestPositions = {};
+        for (let i = playbackState.positionBuffer.length - 1; i >= 0; i--) {
+            const pos = playbackState.positionBuffer[i];
+            if (new Date(pos.date) > targetTime) continue;
+            if (!latestPositions[pos.driver_number]) {
+                latestPositions[pos.driver_number] = pos;
+            }
+        }
+        const sortedDrivers = Object.values(latestPositions).sort((a, b) => a.position - b.position);
+        leaderboardBody.innerHTML = '';
+        for (const driverPos of sortedDrivers) {
+            const driverNumber = driverPos.driver_number;
+            const driverInfo = DRIVER_DIRECTORY[driverNumber] || {};
+            const isDNF = dnfDrivers.has(Number(driverNumber));
+            const row = document.createElement('div');
+            row.className = 'leaderboard-row';
+            if (isDNF) row.classList.add('dnf');
+            row.innerHTML = `
+                <span class="pos">${driverPos.position}</span>
+                <div class="driver-name">
+                    <span class="team-color-indicator" style="background-color: ${driverInfo.team_colour || '#FFFFFF'}"></span>
+                    <span>${driverInfo.full_name || `Driver ${driverNumber}`}</span>
+                </div>
+                <div class="status">
+                    ${isDNF ? '<span class="driver-status-tag dnf">DNF</span>' : ''}
+                </div>
+            `;
+            leaderboardBody.appendChild(row);
         }
     }
     
     function updateUI(timeMs) {
         timelineSlider.value = timeMs;
         currentTimeEl.textContent = msToTime(timeMs);
+        const targetTime = new Date(new Date(SESSION_INFO.date_start).getTime() + timeMs);
+        updateLeaderboard(targetTime);
         drawOnCanvas();
     }
     
     function drawOnCanvas() {
+        if (!canvas.parentElement) return;
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#181820';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        if (!SESSION_INFO?.date_start || !bbox) {
-            return;
-        }
+        if (!SESSION_INFO?.date_start || !bbox || !orientationCalculated) return;
         
+        const showDrivers = playbackState.isPlaying || playbackState.currentTimeMs > 0;
         const targetTime = new Date(new Date(SESSION_INFO.date_start).getTime() + playbackState.currentTimeMs);
-        const latestLocations = {};
-        for(const loc of playbackState.locationBuffer) { 
-            if (new Date(loc.date) > targetTime) break; 
-            latestLocations[loc.driver_number] = loc;
-        }
         
         const trackWidth = bbox.maxX - bbox.minX;
         const trackHeight = bbox.maxY - bbox.minY;
@@ -240,20 +265,22 @@
         const canvasDrawableHeight = canvas.height - (PADDING * 2);
         const scaleX = trackWidth > 0 ? canvasDrawableWidth / trackWidth : 1;
         const scaleY = trackHeight > 0 ? canvasDrawableHeight / trackHeight : 1;
-        const scale = Math.min(scaleX, scaleY) * 0.95; // 약간의 추가 여백
-        
-        const offsetX = (canvas.width - (trackWidth * scale)) / 2 - (bbox.minX * scale);
-        const offsetY = (canvas.height + (trackHeight * scale)) / 2 - (bbox.maxY * scale);
+        const scale = Math.min(scaleX, scaleY);
+
+        const trackCenterX = (bbox.minX + bbox.maxX) / 2;
+        const trackCenterY = (bbox.minY + bbox.maxY) / 2;
+        const offsetX = (canvas.width / 2) - (trackCenterX * scale);
+        const offsetY = (canvas.height / 2) + (trackCenterY * scale);
 
         const transform = (x, y) => {
-            const rotated = rotatePoint(x, y, initialAngle);
+            const flippedX = x * flipX;
+            const rotated = rotatePoint(flippedX, y, initialAngle);
             return { 
                 x: rotated.x * scale + offsetX, 
                 y: -rotated.y * scale + offsetY 
             };
         };
 
-        // 트랙 그리기
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
         ctx.lineWidth = 5;
         trackPath.forEach((path) => {
@@ -268,38 +295,119 @@
                 ctx.stroke();
             }
         });
+        
+        if (showDrivers) {
+            const latestLocations = {};
+            for (let i = playbackState.locationBuffer.length - 1; i >= 0; i--) {
+                const loc = playbackState.locationBuffer[i];
+                if (new Date(loc.date) > targetTime) continue;
+                if (!latestLocations[loc.driver_number]) {
+                    latestLocations[loc.driver_number] = loc;
+                }
+            }
 
-        // 드라이버 그리기
-        for (const driverNumber in latestLocations) {
-            if (dnfDrivers.has(Number(driverNumber))) continue;
-            const pos = latestLocations[driverNumber];
-            const driverInfo = DRIVER_DIRECTORY[driverNumber] || {};
-            const { x: canvasX, y: canvasY } = transform(pos.x, pos.y);
-            
-            ctx.beginPath();
-            ctx.arc(canvasX, canvasY, 10, 0, 2 * Math.PI);
-            ctx.fillStyle = driverInfo.team_colour || '#FFFFFF';
-            ctx.fill();
+            for (const driverNumber in latestLocations) {
+                if (dnfDrivers.has(Number(driverNumber))) continue;
+                
+                const pos = latestLocations[driverNumber];
+                const driverInfo = DRIVER_DIRECTORY[driverNumber] || {};
+                const { x: canvasX, y: canvasY } = transform(pos.x, pos.y);
+                const circleRadius = 11;
+
+                ctx.beginPath();
+                ctx.arc(canvasX, canvasY, circleRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = driverInfo.team_colour || '#FFFFFF';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.strokeText(driverNumber, canvasX, canvasY);
+                ctx.fillStyle = 'white';
+                ctx.fillText(driverNumber, canvasX, canvasY);
+            }
         }
     }
 
-    function initialize() {
+    async function initialize() {
         if (!SESSION_INFO) return showMessage("세션 정보를 불러올 수 없습니다.");
         
         timelineSlider.max = raceDuration;
         totalTimeEl.textContent = msToTime(raceDuration);
         playPauseBtn.addEventListener('click', togglePlayPause);
+        playPauseBtn.disabled = true;
+        timelineSlider.disabled = true;
         
-        resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
-        fetchNextChunk();
+        
+        let firstLapLocations = [];
+        let bufferedUntilMs = 0;
+        let success = true;
+
+        // --- 수정된 부분: 1랩 데이터만 먼저 로드 ---
+        showMessage('트랙 레이아웃 분석 중...');
+        
+        while (bufferedUntilMs < LAP_ESTIMATE_MS && success) {
+            const startTime = new Date(SESSION_INFO.date_start);
+            const chunkStartMs = bufferedUntilMs;
+            const chunkEndMs = Math.min(chunkStartMs + CHUNK_DURATION_MS, LAP_ESTIMATE_MS);
+            const chunkStartTime = new Date(startTime.getTime() + chunkStartMs).toISOString();
+            const chunkEndTime = new Date(startTime.getTime() + chunkEndMs).toISOString();
+
+            try {
+                const response = await fetch(`/api/locations/<%= session_key %>/${chunkStartTime}/${chunkEndTime}`);
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                if (bufferedUntilMs === 0 && (!data.locations || data.locations.length === 0)) {
+                    throw new Error("이 경기에 대한 주행 데이터가 없습니다.");
+                }
+
+                if (data.locations) firstLapLocations.push(...data.locations);
+                if (data.positions) playbackState.positionBuffer.push(...data.positions);
+                if (data.race_control) {
+                     playbackState.raceControlBuffer.push(...data.race_control);
+                    data.race_control.forEach(msg => {
+                        if (msg.category === 'Retirement' && msg.driver_number) dnfDrivers.add(msg.driver_number);
+                    });
+                }
+                
+                bufferedUntilMs = chunkEndMs;
+            } catch (error) {
+                console.error('데이터 로딩 실패:', error);
+                showMessage(error.message.includes('주행 데이터') ? error.message : `오류가 발생했습니다: ${error.message}`);
+                success = false;
+            }
+        }
+        
+        if (success) {
+            hideMessage();
+            playbackState.locationBuffer = firstLapLocations;
+            
+            firstLapLocations.forEach(loc => {
+                const driverNum = loc.driver_number;
+                if (!trackPath.has(driverNum)) trackPath.set(driverNum, []);
+                trackPath.get(driverNum).push({ x: loc.x, y: loc.y });
+            });
+
+            calculateOrientationAndBbox(firstLapLocations);
+            
+            playPauseBtn.disabled = false;
+            timelineSlider.disabled = false;
+            
+            resizeCanvas();
+        }
     }
 
     function resizeCanvas() { 
-        const container = document.getElementById('track-container');
-        if (container) {
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
+        if (trackContainer) {
+            canvas.width = trackContainer.clientWidth;
+            canvas.height = trackContainer.clientHeight;
             drawOnCanvas(); 
         }
     }

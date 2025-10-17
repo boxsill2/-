@@ -1,27 +1,32 @@
 {
+  "info": {
+    "driverId": "sainz",
+    "slug": "carlos-sainz",
+    "full_name": "Carlos Sainz",
+    "number": "55",
+    "code": "SAI",
+    "nationality": "Spanish",
+    "photo_src": "/images/drivers/55.png",
+    "team_name": "Williams",
+    "team_colour": "#64C4FF"
+  },
   "season": {
-    "season_position": "12",
-    "season_points": 31,
-    "gp_races": 17,
-    "gp_points": 28,
+    "gp_races": 18,
+    "gp_points": 29.0,
     "gp_podiums": 1,
-    "gp_top10": 7,
-    "dnfs": 2,
-    "sp_races": 3,
-    "sp_points": 108,
-    "sp_podiums": 9,
-    "sp_top10": 30
+    "gp_top10": 8,
+    "dnfs": 7,
+    "season_position": "12",
+    "season_points": "32"
   },
   "career": {
     "gp_entered": 100,
-    "career_points": 251,
-    "best_finish": "4",
+    "career_points": 251.0,
     "podiums": 0,
-    "best_grid": "0",
-    "poles": 0,
-    "titles": 0,
-    "dnfs": 25
-  },
-  "_source": "jolpica-f1",
-  "_generatedAt": "2025-09-26T05:55:12.857327Z"
+    "dnfs": 25,
+    "poles": 4,
+    "best_finish": 4,
+    "best_grid": 5,
+    "titles": 0
+  }
 }

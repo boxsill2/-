@@ -1,27 +1,32 @@
 {
+  "info": {
+    "driverId": "doohan",
+    "slug": "jack-doohan",
+    "full_name": "Jack Doohan",
+    "number": "7",
+    "code": "DOO",
+    "nationality": "Australian",
+    "photo_src": "/images/drivers/7.png",
+    "team_name": "Alpine F1 Team",
+    "team_colour": "#FFFFFF"
+  },
   "season": {
-    "season_position": "-",
-    "season_points": 0,
-    "gp_races": 0,
-    "gp_points": 0,
+    "gp_races": 6,
+    "gp_points": 0.0,
     "gp_podiums": 0,
     "gp_top10": 0,
-    "dnfs": 0,
-    "sp_races": 3,
-    "sp_points": 108,
-    "sp_podiums": 9,
-    "sp_top10": 30
+    "dnfs": 3,
+    "season_position": "21",
+    "season_points": "0"
   },
   "career": {
-    "gp_entered": 0,
-    "career_points": 0,
-    "best_finish": "-",
+    "gp_entered": 7,
+    "career_points": 0.0,
     "podiums": 0,
-    "best_grid": "-",
+    "dnfs": 4,
     "poles": 0,
-    "titles": 0,
-    "dnfs": 0
-  },
-  "_source": "jolpica-f1",
-  "_generatedAt": "2025-09-26T05:52:37.414702Z"
+    "best_finish": 13,
+    "best_grid": 11,
+    "titles": 0
+  }
 }

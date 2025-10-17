@@ -1,30 +1,32 @@
 {
+  "info": {
+    "driverId": "hadjar",
+    "slug": "isack-hadjar",
+    "full_name": "Isack Hadjar",
+    "number": "6",
+    "code": "HAD",
+    "nationality": "French",
+    "photo_src": "/images/drivers/6.png",
+    "team_name": "RB F1 Team",
+    "team_colour": "#FFFFFF"
+  },
   "season": {
-    "season_year": 2025,
-    "season_position": 9,
-    "season_points": 39,
     "gp_races": 18,
-    "gp_points": 38,
+    "gp_points": 38.0,
     "gp_podiums": 1,
-    "gp_top10s": 8,
-    "wins": 0,
+    "gp_top10": 8,
     "dnfs": 8,
-    "best_grid": 4,
-    "poles": 0,
-    "sprint_races": 0,
-    "sprint_points": 0,
-    "sprint_podiums": 0,
-    "sprint_poles": 0,
-    "sprint_top10s": 0
+    "season_position": "9",
+    "season_points": "39"
   },
   "career": {
     "gp_entered": 18,
-    "points": 38,
-    "best_finish": "3 (x1)",
+    "career_points": 38.0,
     "podiums": 1,
-    "best_grid": 4,
+    "dnfs": 8,
     "poles": 0,
-    "world_championships": 0,
-    "dnfs": 8
+    "best_finish": 3,
+    "best_grid": 4,
+    "titles": 0
   }
 }

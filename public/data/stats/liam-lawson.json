@@ -1,27 +1,32 @@
 {
+  "info": {
+    "driverId": "lawson",
+    "slug": "liam-lawson",
+    "full_name": "Liam Lawson",
+    "number": "30",
+    "code": "LAW",
+    "nationality": "New Zealander",
+    "photo_src": "/images/drivers/30.png",
+    "team_name": "RB F1 Team",
+    "team_colour": "#FFFFFF"
+  },
   "season": {
-    "season_position": "13",
-    "season_points": 30,
-    "gp_races": 17,
-    "gp_points": 30,
+    "gp_races": 18,
+    "gp_points": 30.0,
     "gp_podiums": 0,
     "gp_top10": 5,
-    "dnfs": 4,
-    "sp_races": 3,
-    "sp_points": 108,
-    "sp_podiums": 9,
-    "sp_top10": 30
+    "dnfs": 6,
+    "season_position": "14",
+    "season_points": "30"
   },
   "career": {
-    "gp_entered": 28,
-    "career_points": 36,
-    "best_finish": "5",
+    "gp_entered": 29,
+    "career_points": 36.0,
     "podiums": 0,
-    "best_grid": "3",
+    "dnfs": 9,
     "poles": 0,
-    "titles": 0,
-    "dnfs": 4
-  },
-  "_source": "jolpica-f1",
-  "_generatedAt": "2025-09-26T05:54:32.408595Z"
+    "best_finish": 5,
+    "best_grid": 3,
+    "titles": 0
+  }
 }

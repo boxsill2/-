@@ -1,27 +1,32 @@
 {
+  "info": {
+    "driverId": "stroll",
+    "slug": "lance-stroll",
+    "full_name": "Lance Stroll",
+    "number": "18",
+    "code": "STR",
+    "nationality": "Canadian",
+    "photo_src": "/images/drivers/18.png",
+    "team_name": "Aston Martin",
+    "team_colour": "#229971"
+  },
   "season": {
-    "season_position": "11",
-    "season_points": 32,
-    "gp_races": 16,
-    "gp_points": 28,
+    "gp_races": 17,
+    "gp_points": 28.0,
     "gp_podiums": 0,
     "gp_top10": 5,
-    "dnfs": 0,
-    "sp_races": 3,
-    "sp_points": 108,
-    "sp_podiums": 9,
-    "sp_top10": 30
+    "dnfs": 8,
+    "season_position": "13",
+    "season_points": "32"
   },
   "career": {
     "gp_entered": 100,
-    "career_points": 176,
-    "best_finish": "3",
+    "career_points": 176.0,
     "podiums": 3,
-    "best_grid": "1",
-    "poles": 1,
-    "titles": 0,
-    "dnfs": 18
-  },
-  "_source": "jolpica-f1",
-  "_generatedAt": "2025-09-26T05:53:06.810227Z"
+    "dnfs": 19,
+    "poles": 0,
+    "best_finish": 3,
+    "best_grid": 1,
+    "titles": 0
+  }
 }
