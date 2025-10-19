@@ -22,15 +22,47 @@ router.get('/schedule', async (req, res) => {
     } catch (e) { res.render('schedule', { year: new Date().getFullYear(), schedule: [], error: '스케줄 데이터를 불러오지 못했습니다.', currentPage: 'schedule' }); }
 });
 
-// --- 추가된 라우터 ---
-
 // 드라이버 목록 페이지
 router.get('/drivers', async (req, res) => {
     try {
         const drivers = await readJSON(path.join(DATA_DIR, 'drivers.json'));
-        res.render('drivers', { drivers: drivers || [], currentPage: 'drivers' });
+        res.render('drivers', { drivers: drivers || [], currentPage: 'drivers', error: null, slugify });
     } catch (e) {
-        res.status(500).render('drivers', { drivers: [], error: '드라이버 데이터를 불러오는 데 실패했습니다.', currentPage: 'drivers' });
+        res.status(500).render('drivers', { drivers: [], error: '드라이버 데이터를 불러오는 데 실패했습니다.', currentPage: 'drivers', slugify });
+    }
+});
+
+// 드라이버 상세 페이지
+router.get('/drivers/:driverId', async (req, res) => {
+    try {
+        const { driverId } = req.params;
+        const drivers = await readJSON(path.join(DATA_DIR, 'drivers.json'));
+        const driver = drivers.find(d => slugify(d.full_name) === driverId);
+
+        if (!driver) {
+            return res.status(404).render('driver-detail', { info: null, description: null, season: {}, career: {}, error: '드라이버 정보를 찾을 수 없습니다.', currentPage: 'drivers', slugify });
+        }
+
+        const driverDescriptions = await readJSON(path.join(DATA_DIR, 'driver_descriptions.json'));
+        const description = driverDescriptions[driver.full_name] || '이 드라이버에 대한 추가 정보가 없습니다.';
+        
+        let driverStats = await readJSON(path.join(DATA_DIR, 'stats', `${slugify(driver.full_name)}.json`));
+        
+        const seasonStats = driverStats?.season || {};
+        const careerStats = driverStats?.career || {};
+
+        res.render('driver-detail', { 
+            info: driver, 
+            description, 
+            season: seasonStats, 
+            career: careerStats, 
+            error: null, 
+            currentPage: 'drivers',
+            slugify
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).render('driver-detail', { info: null, description: null, season: {}, career: {}, error: '드라이버 데이터를 불러오는 데 실패했습니다.', currentPage: 'drivers', slugify });
     }
 });
 
@@ -38,25 +70,45 @@ router.get('/drivers', async (req, res) => {
 router.get('/teams', async (req, res) => {
     try {
         const teams = await readJSON(path.join(DATA_DIR, 'teams.json'));
-        res.render('teams', { teams: teams || [], currentPage: 'teams' });
+        res.render('teams', { teams: teams || [], currentPage: 'teams', error: null });
     } catch (e) {
         res.status(500).render('teams', { teams: [], error: '팀 데이터를 불러오는 데 실패했습니다.', currentPage: 'teams' });
     }
 });
 
+// 팀 상세 페이지
+router.get('/teams/:teamId', async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        const teams = await readJSON(path.join(DATA_DIR, 'teams.json'));
+        const team = teams.find(t => t.slug === teamId);
+
+        if (!team) {
+            return res.status(404).render('team-detail', { info: null, drivers: [], error: '팀 정보를 찾을 수 없습니다.', currentPage: 'teams', slugify });
+        }
+        
+        const drivers = await readJSON(path.join(DATA_DIR, 'drivers.json'));
+        const teamDrivers = drivers.filter(d => d.team_name === team.team_name);
+
+        res.render('team-detail', { info: team, drivers: teamDrivers, error: null, currentPage: 'teams', slugify });
+    } catch (e) {
+        console.error(e);
+        res.status(500).render('team-detail', { info: null, drivers: [], error: '팀 데이터를 불러오는 데 실패했습니다.', currentPage: 'teams', slugify });
+    }
+});
+
+
 // 용어집 페이지
 router.get('/glossary', async (req, res) => {
     try {
-        // f1_terms.json은 DATA_DIR이 아닌 ROOT_DIR에 위치
         const terms = await readJSON(path.join(ROOT_DIR, 'f1_terms.json'));
-        res.render('glossary', { terms: terms || [], currentPage: 'glossary' });
+        res.render('glossary', { terms: terms || [], currentPage: 'glossary', error: null });
     } catch (e) {
         res.status(500).render('glossary', { terms: [], error: '용어 데이터를 불러오는 데 실패했습니다.', currentPage: 'glossary' });
     }
 });
 
-// --- 기존 코드 유지 ---
-
+// 리플레이 페이지
 router.get('/replays/:session_key', async (req, res) => {
     const { session_key } = req.params;
     try {
@@ -100,7 +152,8 @@ router.get('/replays/:session_key', async (req, res) => {
             session_key, 
             driverDirectory, 
             sessionInfo: finalSessionInfo, 
-            currentPage: 'schedule' 
+            currentPage: 'schedule',
+            error: null
         });
     } catch (e) {
         console.error(e);
@@ -108,6 +161,7 @@ router.get('/replays/:session_key', async (req, res) => {
     }
 });
 
+// API 라우트
 router.get('/api/locations/:session_key/:startTime/:endTime', (req, res) => {
     const { session_key, startTime, endTime } = req.params;
     const scriptPath = path.join(ROOT_DIR, 'get_driver_locations.py');
@@ -125,7 +179,7 @@ router.get('/api/locations/:session_key/:startTime/:endTime', (req, res) => {
     });
 });
 
-// --- 서버 실행 ---
+// --- 서버 실행 (개발 환경에서만) ---
 if (require.main === module) {
     const app = express();
     app.set('view engine', 'ejs');
@@ -137,3 +191,4 @@ if (require.main === module) {
 }
 
 module.exports = router;
+

@@ -1,51 +1,51 @@
 [
   {
-    "name": "Alpine F1 Team",
-    "slug": "alpine-f1-team",
+    "team_name": "Alpine",
+    "slug": "alpine",
     "logo": "/images/teams/alpine-f1-team.png"
   },
   {
-    "name": "Aston Martin",
+    "team_name": "Aston Martin",
     "slug": "aston-martin",
     "logo": "/images/teams/aston-martin.png"
   },
   {
-    "name": "Ferrari",
+    "team_name": "Ferrari",
     "slug": "ferrari",
     "logo": "/images/teams/ferrari.png"
   },
   {
-    "name": "Haas F1 Team",
+    "team_name": "Haas F1 Team",
     "slug": "haas-f1-team",
     "logo": "/images/teams/haas-f1-team.png"
   },
   {
-    "name": "McLaren",
+    "team_name": "McLaren",
     "slug": "mclaren",
     "logo": "/images/teams/mclaren.png"
   },
   {
-    "name": "Mercedes",
+    "team_name": "Mercedes",
     "slug": "mercedes",
     "logo": "/images/teams/mercedes.png"
   },
   {
-    "name": "RB F1 Team",
-    "slug": "rb-f1-team",
+    "team_name": "RB",
+    "slug": "rb",
     "logo": "/images/teams/rb-f1-team.png"
   },
   {
-    "name": "Red Bull",
-    "slug": "red-bull",
+    "team_name": "Red Bull Racing",
+    "slug": "red-bull-racing",
     "logo": "/images/teams/red-bull.png"
   },
   {
-    "name": "Sauber",
-    "slug": "sauber",
+    "team_name": "Kick Sauber",
+    "slug": "kick-sauber",
     "logo": "/images/teams/sauber.png"
   },
   {
-    "name": "Williams",
+    "team_name": "Williams",
     "slug": "williams",
     "logo": "/images/teams/williams.png"
   }

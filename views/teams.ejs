@@ -1,39 +1,31 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <title>팀 - F1 스탯</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/css/base.css?v=f1" />
-  <link rel="stylesheet" href="/css/header-style.css?v=f1" />
-  <link rel="stylesheet" href="/css/teams-style.css?v=f1" />
+    <meta charset="utf-8" />
+    <title>F1 팀 목록</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/css/base.css?v=f1" />
+    <link rel="stylesheet" href="/css/header-style.css?v=f1" />
+    <link rel="stylesheet" href="/css/team-style.css?v=f1" />
 </head>
-<body class="theme-f1 teams-page">
-
-  <%- include('partials/header', { currentPage: 'teams' }) %>
-
-  <main class="container">
-    <section class="page-header">
-      <h1 class="page-title">F1 Teams</h1>
-      <p class="page-desc">올해 F1 컨스트럭터 팀 목록입니다.</p>
-    </section>
-
-    <section class="grid grid--wide">
-      <% (teams || []).forEach(t => { %>
-        <a class="team-card" href="/teams/<%= t.slug %>" aria-label="<%= t.name %> 상세 보기">
-          <span class="team-photo">
-            <img src="<%= t.logo %>" alt="<%= t.name %> 로고" loading="lazy" decoding="async" 
-                 onerror="this.parentElement.innerHTML = `<span class='avatar-fallback'>${(t.name || 'T').charAt(0)}</span>`">
-          </span>
-          <span class="team-meta">
-            <span class="top">
-              <% if (t.nationality) { %><span><%= t.nationality %></span><% } %>
-            </span>
-            <h3 class="name"><%= t.name %></h3>
-          </span>
-        </a>
-      <% }) %>
-    </section>
-  </main>
+<body>
+    <div id="page-wrapper">
+        <%- include('partials/header', { currentPage: currentPage }) %>
+        <main id="page-main">
+            <h1 class="page-title">F1 팀</h1>
+            <% if (error) { %>
+                <p class="page-desc"><%= error %></p>
+            <% } else { %>
+                <div class="team-grid">
+                    <% teams.forEach(function(team) { %>
+                        <a href="/teams/<%= team.slug %>" class="team-card">
+                            <img src="<%= team.logo %>" alt="<%= team.team_name %> 로고" class="team-logo">
+                            <h2 class="team-name"><%= team.team_name %></h2>
+                        </a>
+                    <% }); %>
+                </div>
+            <% } %>
+        </main>
+    </div>
 </body>
 </html>

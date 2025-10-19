@@ -1,36 +1,73 @@
-/* public/css/teams-style.css */
-.teams-page .team-card {
-  display: flex; align-items: center; gap: 14px; padding: 16px;
-  background: rgba(255, 255, 255, .03);
-  border: 1px solid rgba(255, 255, 255, .08);
-  border-radius: 16px; color: inherit; text-decoration: none;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+/* Team List Page */
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 화면 크기에 맞춰 자동으로 열 개수를 조절하는 반응형 그리드 */
+    gap: 2rem;
+    padding: 2rem 0;
 }
-.teams-page .team-card:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, .04);
-  border-color: rgba(255, 255, 255, .14);
+
+.team-card {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
 }
-.teams-page .team-photo {
-  width: 72px; height: 72px; border-radius: 14px; overflow: hidden;
-  background: rgba(255, 255, 255, .04);
-  border: 1px solid rgba(255, 255, 255, .08);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; padding: 8px; box-sizing: border-box;
+
+.team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
-.teams-page .team-photo img {
-  width: 100%; height: 100%; display: block; object-fit: contain;
+
+.team-logo {
+    max-height: 80px;
+    width: auto;
+    margin-bottom: 1.5rem;
 }
-.teams-page .team-photo .avatar-fallback {
-  color: rgba(255, 255, 255, .9); font-weight: 800; font-size: 28px;
+
+.team-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-top: auto;
 }
-.teams-page .team-meta {
-  display: flex; flex-direction: column; gap: 6px; min-width: 0;
+
+/* Team Detail Page */
+.team-detail-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    border-bottom: 1px solid #333;
 }
-.teams-page .team-meta .top {
-  display: flex; gap: 8px; align-items: center; opacity: .8; font-size: 12px;
+
+.team-detail-logo {
+    max-width: 250px;
+    margin-bottom: 1.5rem;
 }
-.teams-page .team-meta .name {
-  margin: 0; font-size: 16px; font-weight: 800; line-height: 1.2;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+
+.team-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.team-drivers {
+    margin-top: 2rem;
+    text-align: center; /* 제목 중앙 정렬을 위해 추가 */
+}
+
+.team-drivers h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #eee;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e10600;
+    padding-bottom: 0.5rem;
+    display: inline-block;
 }
