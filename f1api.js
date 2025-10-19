@@ -22,7 +22,40 @@ router.get('/schedule', async (req, res) => {
     } catch (e) { res.render('schedule', { year: new Date().getFullYear(), schedule: [], error: '스케줄 데이터를 불러오지 못했습니다.', currentPage: 'schedule' }); }
 });
 
-// (drivers, teams, glossary 등 다른 페이지 라우팅은 이전과 동일하게 유지)
+// --- 추가된 라우터 ---
+
+// 드라이버 목록 페이지
+router.get('/drivers', async (req, res) => {
+    try {
+        const drivers = await readJSON(path.join(DATA_DIR, 'drivers.json'));
+        res.render('drivers', { drivers: drivers || [], currentPage: 'drivers' });
+    } catch (e) {
+        res.status(500).render('drivers', { drivers: [], error: '드라이버 데이터를 불러오는 데 실패했습니다.', currentPage: 'drivers' });
+    }
+});
+
+// 팀 목록 페이지
+router.get('/teams', async (req, res) => {
+    try {
+        const teams = await readJSON(path.join(DATA_DIR, 'teams.json'));
+        res.render('teams', { teams: teams || [], currentPage: 'teams' });
+    } catch (e) {
+        res.status(500).render('teams', { teams: [], error: '팀 데이터를 불러오는 데 실패했습니다.', currentPage: 'teams' });
+    }
+});
+
+// 용어집 페이지
+router.get('/glossary', async (req, res) => {
+    try {
+        // f1_terms.json은 DATA_DIR이 아닌 ROOT_DIR에 위치
+        const terms = await readJSON(path.join(ROOT_DIR, 'f1_terms.json'));
+        res.render('glossary', { terms: terms || [], currentPage: 'glossary' });
+    } catch (e) {
+        res.status(500).render('glossary', { terms: [], error: '용어 데이터를 불러오는 데 실패했습니다.', currentPage: 'glossary' });
+    }
+});
+
+// --- 기존 코드 유지 ---
 
 router.get('/replays/:session_key', async (req, res) => {
     const { session_key } = req.params;
@@ -103,4 +136,4 @@ if (require.main === module) {
     app.listen(PORT, () => console.log(`서버가 http://localhost:${PORT} 에서 시작되었습니다.`));
 }
 
-module.exports = router; 
+module.exports = router;

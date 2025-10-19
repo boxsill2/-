@@ -117,5 +117,12 @@
     "meeting_name": null,
     "date_start": "2025-09-21T11:00:00+00:00",
     "circuit_short_name": "Baku"
+  },
+  {
+    "session_key": 9896,
+    "country_name": "Singapore",
+    "meeting_name": null,
+    "date_start": "2025-10-05T12:00:00+00:00",
+    "circuit_short_name": "Singapore"
   }
 ]
