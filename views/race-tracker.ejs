@@ -103,7 +103,12 @@
     const trackContainer = document.getElementById('track-container');
     
     const PADDING = 40;
-    const raceDuration = 7200000;
+    const DEFAULT_RACE_DURATION = 7200000;
+    const sessionStartDate = SESSION_INFO?.date_start ? new Date(SESSION_INFO.date_start) : null;
+    const sessionEndDate = SESSION_INFO?.race_end_date ? new Date(SESSION_INFO.race_end_date) : null;
+    const raceDuration = (sessionStartDate && sessionEndDate && sessionEndDate > sessionStartDate)
+        ? sessionEndDate.getTime() - sessionStartDate.getTime()
+        : DEFAULT_RACE_DURATION;
     const CHUNK_DURATION_MS = 120000;
     const LAP_ESTIMATE_MS = 180000; // 3분으로 1랩 데이터 로드 시간 추정
     
@@ -206,6 +211,10 @@
     }
     
     function updateLeaderboard(targetTime) {
+        if (!targetTime) {
+            leaderboardBody.innerHTML = '';
+            return;
+        }
         const latestPositions = {};
         for (let i = playbackState.positionBuffer.length - 1; i >= 0; i--) {
             const pos = playbackState.positionBuffer[i];
@@ -240,11 +249,11 @@
     function updateUI(timeMs) {
         timelineSlider.value = timeMs;
         currentTimeEl.textContent = msToTime(timeMs);
-        const targetTime = new Date(new Date(SESSION_INFO.date_start).getTime() + timeMs);
+        const targetTime = sessionStartDate ? new Date(sessionStartDate.getTime() + timeMs) : null;
         updateLeaderboard(targetTime);
         drawOnCanvas();
     }
-    
+
     function drawOnCanvas() {
         if (!canvas.parentElement) return;
         canvas.width = canvas.parentElement.clientWidth;
@@ -254,10 +263,10 @@
         ctx.fillStyle = '#181820';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        if (!SESSION_INFO?.date_start || !bbox || !orientationCalculated) return;
-        
+        if (!sessionStartDate || !bbox || !orientationCalculated) return;
+
         const showDrivers = playbackState.isPlaying || playbackState.currentTimeMs > 0;
-        const targetTime = new Date(new Date(SESSION_INFO.date_start).getTime() + playbackState.currentTimeMs);
+        const targetTime = new Date(sessionStartDate.getTime() + playbackState.currentTimeMs);
         
         const trackWidth = bbox.maxX - bbox.minX;
         const trackHeight = bbox.maxY - bbox.minY;
@@ -337,6 +346,10 @@
     async function initialize() {
         if (!SESSION_INFO) return showMessage("세션 정보를 불러올 수 없습니다.");
         
+        if (!sessionStartDate) {
+            return showMessage('세션 시작 시간을 불러오지 못했습니다. 나중에 다시 시도해주세요.');
+        }
+
         timelineSlider.max = raceDuration;
         totalTimeEl.textContent = msToTime(raceDuration);
         playPauseBtn.addEventListener('click', togglePlayPause);
@@ -353,7 +366,7 @@
         showMessage('트랙 레이아웃 분석 중...');
         
         while (bufferedUntilMs < LAP_ESTIMATE_MS && success) {
-            const startTime = new Date(SESSION_INFO.date_start);
+            const startTime = sessionStartDate;
             const chunkStartMs = bufferedUntilMs;
             const chunkEndMs = Math.min(chunkStartMs + CHUNK_DURATION_MS, LAP_ESTIMATE_MS);
             const chunkStartTime = new Date(startTime.getTime() + chunkStartMs).toISOString();

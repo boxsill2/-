@@ -4,6 +4,17 @@ import json
 import argparse
 from datetime import datetime
 
+
+def _parse_iso(date_str):
+    """Return timezone-aware datetime from API ISO strings."""
+    if not date_str:
+        return None
+    try:
+        # OpenF1는 UTC(+00:00) 오프셋이 있는 ISO 포맷을 사용합니다.
+        return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
 API_BASE = 'https://api.openf1.org/v1'
 
 def fetch_data(endpoint, params):
@@ -20,17 +31,54 @@ def fetch_data(endpoint, params):
 def get_race_times(session_key):
     """'Race Control' 메시지를 분석하여 실제 경주 시작 및 종료 시간을 찾습니다."""
     messages = fetch_data('race_control', {'session_key': session_key})
-    
-    race_start_msg = next((msg for msg in messages if msg.get('category') == 'Race'), None)
-    chequered_flag_msg = next((msg for msg in messages if msg.get('message') == 'Chequered flag'), None)
+
+    if isinstance(messages, dict) and messages.get('error'):
+        return messages
+
+    # 날짜 순으로 정렬해 분석 정확도를 높입니다.
+    sorted_messages = sorted(
+        [msg for msg in messages if msg.get('date')],
+        key=lambda msg: msg['date']
+    )
+
+    def find_first(predicate):
+        return next((msg for msg in sorted_messages if predicate(msg)), None)
+
+    def find_last(predicate):
+        for msg in reversed(sorted_messages):
+            if predicate(msg):
+                return msg
+        return None
+
+    # 1) 'Race start' 메시지 우선, 2) 'Green flag', 3) 레이스 범주 첫 메시지 순으로 탐색합니다.
+    race_start_msg = (
+        find_first(lambda m: m.get('message', '').lower().startswith('race start'))
+        or find_first(lambda m: 'green flag' in m.get('message', '').lower())
+        or find_first(lambda m: m.get('category') == 'Race')
+    )
+
+    # 1) 체커드 플래그, 2) 레이스 범주 마지막 메시지를 종료 시각으로 사용합니다.
+    chequered_flag_msg = (
+        find_last(lambda m: 'chequered flag' in m.get('message', '').lower())
+        or find_last(lambda m: m.get('category') == 'Race')
+    )
 
     if not race_start_msg or not chequered_flag_msg:
         return {"error": "Could not determine race start or end time from race control messages."}
 
+    race_start_date = _parse_iso(race_start_msg.get('date'))
+    race_end_date = _parse_iso(chequered_flag_msg.get('date'))
+
+    if not race_start_date or not race_end_date:
+        return {"error": "Invalid race control timestamps returned by OpenF1."}
+
+    if race_end_date <= race_start_date:
+        return {"error": "Race control end time is not after start time."}
+
     return {
         "race_start_date": race_start_msg['date'],
         "race_end_date": chequered_flag_msg['date'],
-        "all_messages": messages # DNF 등 다른 정보 처리를 위해 전체 메시지 포함
+        "all_messages": sorted_messages  # DNF 등 다른 정보 처리를 위해 전체 메시지 포함
     }
 
 def get_data_chunk(session_key, start_iso, end_iso):
