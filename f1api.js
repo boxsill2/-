@@ -12,6 +12,43 @@ const DATA_DIR = path.join(PUBLIC_DIR, 'data');
 async function readJSON(filePath) { try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch { return null; } }
 function slugify(text) { return String(text || '').toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-'); }
 
+function runPython(scriptPath, args = []) {
+    return new Promise((resolve, reject) => {
+        if (!fs.existsSync(scriptPath)) {
+            return reject(new Error(`Python script not found: ${scriptPath}`));
+        }
+
+        const pythonProcess = spawn('python', ['-X', 'utf8', scriptPath, ...args]);
+        let stdout = '';
+        let stderr = '';
+
+        pythonProcess.stdout.setEncoding('utf8');
+        pythonProcess.stdout.on('data', (data) => { stdout += data.toString(); });
+        pythonProcess.stderr.on('data', (data) => { stderr += data.toString(); });
+
+        pythonProcess.on('close', (code) => {
+            if (stderr) console.error(`[Python STDERR]: ${stderr.trim()}`);
+            if (code !== 0) {
+                return reject(new Error(`Python script exited with code ${code}`));
+            }
+            resolve(stdout);
+        });
+    });
+}
+
+async function fetchRaceTimingFromPython(sessionKey) {
+    const scriptPath = path.join(ROOT_DIR, 'get_replay_data.py');
+    try {
+        const rawOutput = await runPython(scriptPath, ['race_times', '--session_key', sessionKey]);
+        const parsed = JSON.parse(rawOutput);
+        if (parsed?.error) throw new Error(parsed.error);
+        return parsed;
+    } catch (error) {
+        console.error(`[Race Timing Fetch Error]: ${error.message}`);
+        return null;
+    }
+}
+
 // --- 라우팅 설정 ---
 router.get('/', (req, res) => res.redirect('/schedule'));
 
@@ -115,11 +152,11 @@ router.get('/replays/:session_key', async (req, res) => {
         const schedule = await readJSON(path.join(DATA_DIR, 'schedule.json'));
         const layouts = await readJSON(path.join(DATA_DIR, 'track_layouts.json'));
         const sessionInfo = schedule?.find(s => String(s.session_key) === session_key) || null;
-        
+
         if (!sessionInfo) {
             return res.status(404).render('race-tracker', { error: '해당 세션 정보를 찾을 수 없습니다.' });
         }
-        
+
         const circuitName = sessionInfo.circuit_short_name?.toLowerCase().replace(/\s+/g, '-');
         const layout = layouts?.find(l => l.circuit_short_name === circuitName);
 
@@ -136,22 +173,33 @@ router.get('/replays/:session_key', async (req, res) => {
             }
         }
 
-        const [drivers, f1Teams] = await Promise.all([
+        const [drivers, f1Teams, raceTiming] = await Promise.all([
             readJSON(path.join(DATA_DIR, 'drivers.json')),
-            readJSON(path.join(ROOT_DIR, 'f1_team.json'))
+            readJSON(path.join(ROOT_DIR, 'f1_team.json')),
+            fetchRaceTimingFromPython(session_key)
         ]);
         const driverDirectory = {};
         if (drivers && f1Teams) {
             const teamInfoMap = f1Teams.reduce((acc, team) => { acc[team.name] = { color: team.teamColor }; return acc; }, {});
             drivers.forEach(d => { if (d.number) driverDirectory[d.number] = { full_name: d.full_name, team_colour: teamInfoMap[d.team_name]?.color || '#FFFFFF' }; });
         }
-        
-        const finalSessionInfo = { ...sessionInfo, trackImageUrl, layout };
 
-        res.render('race-tracker', { 
-            session_key, 
-            driverDirectory, 
-            sessionInfo: finalSessionInfo, 
+        const finalSessionInfo = { ...sessionInfo, trackImageUrl, layout };
+        if (raceTiming?.race_start_date) {
+            finalSessionInfo.date_start = raceTiming.race_start_date;
+            finalSessionInfo.race_start_date = raceTiming.race_start_date;
+        }
+        if (raceTiming?.race_end_date) {
+            finalSessionInfo.race_end_date = raceTiming.race_end_date;
+        }
+        if (raceTiming?.all_messages) {
+            finalSessionInfo.race_control_messages = raceTiming.all_messages;
+        }
+
+        res.render('race-tracker', {
+            session_key,
+            driverDirectory,
+            sessionInfo: finalSessionInfo,
             currentPage: 'schedule',
             error: null
         });
