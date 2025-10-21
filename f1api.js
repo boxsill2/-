@@ -1,14 +1,24 @@
-// f1api.js
+// f1api.js (server.js와 통합된 버전)
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const { spawn } = require('child_process');
 
+// --- Express 앱 및 라우터 초기화 ---
+const app = express();
 const router = express.Router();
+
 const ROOT_DIR = __dirname;
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const DATA_DIR = path.join(PUBLIC_DIR, 'data');
 
+// --- 뷰 엔진 및 정적 파일 경로 설정 ---
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+// --- Helper 함수들 ---
 async function readJSON(filePath) { try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch { return null; } }
 function slugify(text) { return String(text || '').toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-'); }
 
@@ -29,25 +39,48 @@ function runPython(scriptPath, args = []) {
         pythonProcess.on('close', (code) => {
             if (stderr) console.error(`[Python STDERR]: ${stderr.trim()}`);
             if (code !== 0) {
-                return reject(new Error(`Python script exited with code ${code}`));
+                const errorMsg = stderr.trim() || `Python script exited with code ${code}`;
+                return reject(new Error(errorMsg));
             }
             resolve(stdout);
         });
     });
 }
 
-async function fetchRaceTimingFromPython(sessionKey) {
+async function fetchRaceTimingFromPython(sessionInfo) {
     const scriptPath = path.join(ROOT_DIR, 'get_replay_data.py');
     try {
-        const rawOutput = await runPython(scriptPath, ['race_times', '--session_key', sessionKey]);
+        if (!sessionInfo) throw new Error('Session info cannot be null.');
+
+        let year = sessionInfo.session_year;
+        if ((!year || year === 'undefined') && sessionInfo.date_start) {
+            year = new Date(sessionInfo.date_start).getFullYear();
+        }
+
+        const eventName = sessionInfo.meeting_name;
+        const sessionName = sessionInfo.session_name;
+
+        if (!year || !eventName || !sessionName) {
+            throw new Error(`Incomplete session data from schedule.json: Year='${year}', Event='${eventName}', Session='${sessionName}'`);
+        }
+
+        const args = [
+            'race_times',
+            '--year', String(year),
+            '--event', eventName,
+            '--session', sessionName
+        ];
+
+        const rawOutput = await runPython(scriptPath, args);
         const parsed = JSON.parse(rawOutput);
         if (parsed?.error) throw new Error(parsed.error);
         return parsed;
     } catch (error) {
         console.error(`[Race Timing Fetch Error]: ${error.message}`);
-        return null;
+        throw error;
     }
 }
+
 
 // --- 라우팅 설정 ---
 router.get('/', (req, res) => res.redirect('/schedule'));
@@ -59,7 +92,6 @@ router.get('/schedule', async (req, res) => {
     } catch (e) { res.render('schedule', { year: new Date().getFullYear(), schedule: [], error: '스케줄 데이터를 불러오지 못했습니다.', currentPage: 'schedule' }); }
 });
 
-// 드라이버 목록 페이지
 router.get('/drivers', async (req, res) => {
     try {
         const drivers = await readJSON(path.join(DATA_DIR, 'drivers.json'));
@@ -69,7 +101,6 @@ router.get('/drivers', async (req, res) => {
     }
 });
 
-// 드라이버 상세 페이지
 router.get('/drivers/:driverId', async (req, res) => {
     try {
         const { driverId } = req.params;
@@ -103,7 +134,6 @@ router.get('/drivers/:driverId', async (req, res) => {
     }
 });
 
-// 팀 목록 페이지
 router.get('/teams', async (req, res) => {
     try {
         const teams = await readJSON(path.join(DATA_DIR, 'teams.json'));
@@ -113,7 +143,6 @@ router.get('/teams', async (req, res) => {
     }
 });
 
-// 팀 상세 페이지
 router.get('/teams/:teamId', async (req, res) => {
     try {
         const { teamId } = req.params;
@@ -134,8 +163,6 @@ router.get('/teams/:teamId', async (req, res) => {
     }
 });
 
-
-// 용어집 페이지
 router.get('/glossary', async (req, res) => {
     try {
         const terms = await readJSON(path.join(ROOT_DIR, 'f1_terms.json'));
@@ -145,7 +172,6 @@ router.get('/glossary', async (req, res) => {
     }
 });
 
-// 리플레이 페이지
 router.get('/replays/:session_key', async (req, res) => {
     const { session_key } = req.params;
     try {
@@ -176,7 +202,7 @@ router.get('/replays/:session_key', async (req, res) => {
         const [drivers, f1Teams, raceTiming] = await Promise.all([
             readJSON(path.join(DATA_DIR, 'drivers.json')),
             readJSON(path.join(ROOT_DIR, 'f1_team.json')),
-            fetchRaceTimingFromPython(session_key)
+            fetchRaceTimingFromPython(sessionInfo)
         ]);
         const driverDirectory = {};
         if (drivers && f1Teams) {
@@ -187,7 +213,6 @@ router.get('/replays/:session_key', async (req, res) => {
         const finalSessionInfo = { ...sessionInfo, trackImageUrl, layout };
         if (raceTiming?.race_start_date) {
             finalSessionInfo.date_start = raceTiming.race_start_date;
-            finalSessionInfo.race_start_date = raceTiming.race_start_date;
         }
         if (raceTiming?.race_end_date) {
             finalSessionInfo.race_end_date = raceTiming.race_end_date;
@@ -205,38 +230,61 @@ router.get('/replays/:session_key', async (req, res) => {
         });
     } catch (e) {
         console.error(e);
-        res.status(500).render('race-tracker', { session_key, driverDirectory: {}, sessionInfo: null, error: '페이지 로드 중 오류 발생', currentPage: 'schedule' });
+        res.status(500).render('race-tracker', { session_key, driverDirectory: {}, sessionInfo: null, error: `페이지 로드 중 오류 발생: ${e.message}`, currentPage: 'schedule' });
     }
 });
 
-// API 라우트
-router.get('/api/locations/:session_key/:startTime/:endTime', (req, res) => {
+router.get('/api/locations/:session_key/:startTime/:endTime', async (req, res) => {
     const { session_key, startTime, endTime } = req.params;
-    const scriptPath = path.join(ROOT_DIR, 'get_driver_locations.py');
-    if (!fs.existsSync(scriptPath)) {
-        return res.status(500).json({ error: 'get_driver_locations.py 스크립트를 찾을 수 없습니다.' });
+    try {
+        const schedule = await readJSON(path.join(DATA_DIR, 'schedule.json'));
+        const sessionInfo = schedule?.find(s => String(s.session_key) === session_key);
+
+        if (!sessionInfo) {
+            return res.status(404).json({ error: 'Session info not found for the given key.' });
+        }
+
+        let year = sessionInfo.session_year;
+        if ((!year || year === 'undefined') && sessionInfo.date_start) {
+            year = new Date(sessionInfo.date_start).getFullYear();
+        }
+        
+        const eventName = sessionInfo.meeting_name;
+        const sessionName = sessionInfo.session_name;
+
+        if (!year || !eventName || !sessionName) {
+            return res.status(500).json({ error: 'Incomplete session data to fetch locations.' });
+        }
+        
+        const scriptPath = path.join(ROOT_DIR, 'get_driver_locations.py');
+        if (!fs.existsSync(scriptPath)) {
+            return res.status(500).json({ error: 'get_driver_locations.py 스크립트를 찾을 수 없습니다.' });
+        }
+
+        const args = [
+            String(year),
+            eventName,
+            sessionName,
+            startTime,
+            endTime
+        ];
+        
+        const output = await runPython(scriptPath, args);
+        res.json(JSON.parse(output));
+
+    } catch (error) {
+        console.error(`[API Locations Error]: ${error.message}`);
+        res.status(500).json({ error: `Internal server error while fetching locations: ${error.message}` });
     }
-    const pythonProcess = spawn('python', ['-X', 'utf8', scriptPath, session_key, startTime, endTime]);
-    let output = '';
-    pythonProcess.stdout.setEncoding('utf8');
-    pythonProcess.stdout.on('data', (data) => { output += data.toString(); });
-    pythonProcess.stderr.on('data', (data) => { console.error(`[Python STDERR]: ${data.toString('utf8')}`); });
-    pythonProcess.on('close', (code) => {
-        if (code !== 0) return res.status(500).json({ error: '데이터 조회 중 서버 오류 발생' });
-        try { res.json(JSON.parse(output)); } catch (e) { res.status(500).json({ error: '스크립트 결과 파싱 실패' }); }
-    });
 });
 
-// --- 서버 실행 (개발 환경에서만) ---
-if (require.main === module) {
-    const app = express();
-    app.set('view engine', 'ejs');
-    app.set('views', path.join(__dirname, 'views'));
-    app.use(express.static(path.join(__dirname, 'public')));
-    app.use('/', router);
-    const PORT = process.env.PORT || 8080;
-    app.listen(PORT, () => console.log(`서버가 http://localhost:${PORT} 에서 시작되었습니다.`));
-}
 
-module.exports = router;
+// --- 라우터를 앱에 적용 ---
+app.use('/', router);
 
+
+// --- 서버 실행 ---
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`서버가 http://localhost:${PORT} 에서 시작되었습니다.`);
+});

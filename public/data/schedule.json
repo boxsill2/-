@@ -1,128 +1,218 @@
 [
   {
     "session_key": 9693,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Australia",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 ROLEX AUSTRALIAN GRAND PRIX 2025",
     "date_start": "2025-03-16T04:00:00+00:00",
     "circuit_short_name": "Melbourne"
   },
   {
     "session_key": 9998,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "China",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 LENOVO CHINESE GRAND PRIX 2025",
     "date_start": "2025-03-23T07:00:00+00:00",
     "circuit_short_name": "Shanghai"
   },
   {
     "session_key": 10006,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Japan",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 MSC CRUISES JAPANESE GRAND PRIX 2025",
     "date_start": "2025-04-06T05:00:00+00:00",
     "circuit_short_name": "Suzuka"
   },
   {
     "session_key": 10014,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Bahrain",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 GULF AIR BAHRAIN GRAND PRIX 2025",
     "date_start": "2025-04-13T15:00:00+00:00",
     "circuit_short_name": "Sakhir"
   },
   {
     "session_key": 10022,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Saudi Arabia",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 STC SAUDI ARABIAN GRAND PRIX 2025",
     "date_start": "2025-04-20T17:00:00+00:00",
     "circuit_short_name": "Jeddah"
   },
   {
     "session_key": 10033,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "United States",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 CRYPTO.COM MIAMI GRAND PRIX 2025",
     "date_start": "2025-05-04T20:00:00+00:00",
     "circuit_short_name": "Miami"
   },
   {
     "session_key": 9987,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Italy",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 MSC CRUISES GRAN PREMIO DEL MADE IN ITALY E DELL'EMILIA-ROMAGNA 2025",
     "date_start": "2025-05-18T13:00:00+00:00",
     "circuit_short_name": "Imola"
   },
   {
     "session_key": 9979,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Monaco",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 GRAND PRIX DE MONACO 2025",
     "date_start": "2025-05-25T13:00:00+00:00",
     "circuit_short_name": "Monte Carlo"
   },
   {
     "session_key": 9971,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Spain",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 ARAMCO GRAN PREMIO DE ESPAÑA 2025",
     "date_start": "2025-06-01T13:00:00+00:00",
     "circuit_short_name": "Catalunya"
   },
   {
     "session_key": 9963,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Canada",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 GRAND PRIX DU CANADA 2025",
     "date_start": "2025-06-15T18:00:00+00:00",
     "circuit_short_name": "Montreal"
   },
   {
     "session_key": 9955,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Austria",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 QATAR AIRWAYS AUSTRIAN GRAND PRIX 2025",
     "date_start": "2025-06-29T13:00:00+00:00",
     "circuit_short_name": "Spielberg"
   },
   {
     "session_key": 9947,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "United Kingdom",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 QATAR AIRWAYS BRITISH GRAND PRIX 2025",
     "date_start": "2025-07-06T14:00:00+00:00",
     "circuit_short_name": "Silverstone"
   },
   {
     "session_key": 9939,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Belgium",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 ROLEX BELGIAN GRAND PRIX 2025",
     "date_start": "2025-07-27T13:00:00+00:00",
     "circuit_short_name": "Spa-Francorchamps"
   },
   {
     "session_key": 9928,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Hungary",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 HUNGARIAN GRAND PRIX 2025",
     "date_start": "2025-08-03T13:00:00+00:00",
     "circuit_short_name": "Hungaroring"
   },
   {
     "session_key": 9920,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Netherlands",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 HEINEKEN DUTCH GRAND PRIX 2025",
     "date_start": "2025-08-31T13:00:00+00:00",
     "circuit_short_name": "Zandvoort"
   },
   {
     "session_key": 9912,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Italy",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 PIRELLI GRAN PREMIO D’ITALIA 2025",
     "date_start": "2025-09-07T13:00:00+00:00",
     "circuit_short_name": "Monza"
   },
   {
     "session_key": 9904,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Azerbaijan",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 QATAR AIRWAYS AZERBAIJAN GRAND PRIX 2025",
     "date_start": "2025-09-21T11:00:00+00:00",
     "circuit_short_name": "Baku"
   },
   {
     "session_key": 9896,
+    "session_name": "Race",
+    "session_year": 2025,
     "country_name": "Singapore",
-    "meeting_name": null,
+    "meeting_name": "FORMULA 1 SINGAPORE AIRLINES SINGAPORE GRAND PRIX 2025",
     "date_start": "2025-10-05T12:00:00+00:00",
     "circuit_short_name": "Singapore"
+  },
+  {
+    "session_key": 10041,
+    "session_name": "Race",
+    "session_year": 2025,
+    "country_name": "United States",
+    "meeting_name": "FORMULA 1 PIRELLI UNITED STATES GRAND PRIX 2025",
+    "date_start": "2025-10-19T19:00:00+00:00",
+    "circuit_short_name": "Austin"
+  },
+  {
+    "session_key": 10049,
+    "session_name": "Race",
+    "session_year": 2025,
+    "country_name": "Mexico",
+    "meeting_name": "FORMULA 1 GRAN PREMIO DE LA CIUDAD DE MÉXICO 2025",
+    "date_start": "2025-10-26T20:00:00+00:00",
+    "circuit_short_name": "Rodriguez"
+  },
+  {
+    "session_key": 10057,
+    "session_name": "Race",
+    "session_year": 2025,
+    "country_name": "Brazil",
+    "meeting_name": "FORMULA 1 LENOVO GRANDE PRÊMIO DE SÃO PAULO 2025",
+    "date_start": "2025-11-09T17:00:00+00:00",
+    "circuit_short_name": "Interlagos"
+  },
+  {
+    "session_key": 10065,
+    "session_name": "Race",
+    "session_year": 2025,
+    "country_name": "United States",
+    "meeting_name": "FORMULA 1 HEINEKEN SILVER LAS VEGAS GRAND PRIX 2025",
+    "date_start": "2025-11-22T06:00:00+00:00",
+    "circuit_short_name": "Las Vegas"
+  },
+  {
+    "session_key": 10073,
+    "session_name": "Race",
+    "session_year": 2025,
+    "country_name": "Qatar",
+    "meeting_name": "FORMULA 1 QATAR AIRWAYS QATAR GRAND PRIX 2025",
+    "date_start": "2025-11-30T17:00:00+00:00",
+    "circuit_short_name": "Losail"
+  },
+  {
+    "session_key": 10081,
+    "session_name": "Race",
+    "session_year": 2025,
+    "country_name": "United Arab Emirates",
+    "meeting_name": "FORMULA 1 ETIHAD AIRWAYS ABU DHABI GRAND PRIX 2025",
+    "date_start": "2025-12-07T13:00:00+00:00",
+    "circuit_short_name": "Yas Marina"
   }
 ]

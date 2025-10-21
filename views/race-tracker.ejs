@@ -50,15 +50,18 @@
       .leaderboard-row.dnf { opacity: 0.5; }
       .leaderboard-row .pos { font-weight: bold; text-align: center; }
       .leaderboard-row .driver-name {
-        display: flex; align-items: center; white-space: nowrap;
+        display: flex; align-items: center;
+        white-space: nowrap;
         overflow: hidden; text-overflow: ellipsis;
       }
       .leaderboard-row .team-color-indicator {
-        width: 6px; height: 16px; border-radius: 3px; display: inline-block;
+        width: 6px;
+        height: 16px; border-radius: 3px; display: inline-block;
         margin-right: 8px; flex-shrink: 0;
       }
       .driver-status-tag {
-        font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 4px; color: #000;
+        font-size: 10px; font-weight: bold;
+        padding: 2px 5px; border-radius: 4px; color: #000;
       }
       .driver-status-tag.dnf { background-color: #FFD700; }
     </style>
@@ -67,7 +70,7 @@
 <%- include('partials/header', { currentPage: 'schedule' }) %>
 <main class="container">
     <div class="title-header"><h1>Race Replay: <%= sessionInfo?.meeting_name || sessionInfo?.country_name || session_key %></h1></div>
-    
+
     <div class="replay-layout">
         <div id="track-container">
             <canvas id="trackCanvas"></canvas>
@@ -82,7 +85,7 @@
             <div id="leaderboard-body"></div>
         </div>
     </div>
-    
+
     <div class="timeline-controls">
         <button id="playPauseBtn" class="play-pause-btn">▶</button>
         <span id="currentTime" class="timeline-time">00:00:00</span>
@@ -101,7 +104,7 @@
     const timelineSlider = document.getElementById('timelineSlider'), currentTimeEl = document.getElementById('currentTime'), totalTimeEl = document.getElementById('totalTime');
     const playPauseBtn = document.getElementById('playPauseBtn'), leaderboardBody = document.getElementById('leaderboard-body'), messageOverlay = document.getElementById('track-message-overlay');
     const trackContainer = document.getElementById('track-container');
-    
+
     const PADDING = 40;
     const DEFAULT_RACE_DURATION = 7200000;
     const sessionStartDate = SESSION_INFO?.date_start ? new Date(SESSION_INFO.date_start) : null;
@@ -111,8 +114,8 @@
         : DEFAULT_RACE_DURATION;
     const CHUNK_DURATION_MS = 120000;
     const LAP_ESTIMATE_MS = 180000; // 3분으로 1랩 데이터 로드 시간 추정
-    
-    let bbox = null; 
+
+    let bbox = null;
     let playbackState = {
         isPlaying: false, currentTimeMs: 0, lastSystemTime: 0,
         isBuffering: false, bufferedUntilMs: 0,
@@ -120,7 +123,7 @@
     };
     const trackPath = new Map();
     const dnfDrivers = new Set();
-    
+
     let orientationCalculated = false;
     let initialAngle = 0;
     let flipX = 1;
@@ -132,10 +135,8 @@
         x: x * Math.cos(angle) - y * Math.sin(angle),
         y: x * Math.sin(angle) + y * Math.cos(angle)
     });
-
     function calculateOrientationAndBbox(locations) {
         if (!locations || locations.length < 2) return;
-
         // 1. 주행 방향 결정 (시계/반시계)
         const driverNumbers = [...new Set(locations.map(p => p.driver_number))];
         if (driverNumbers.length > 0) {
@@ -150,7 +151,7 @@
                 }
             }
         }
-        
+
         // 2. 출발 방향을 오른쪽으로 정렬하기 위한 각도 계산
         const firstPoint = locations[0];
         const secondPoint = locations.find(p => p.x !== firstPoint.x || p.y !== firstPoint.y);
@@ -169,10 +170,10 @@
             tempBbox.maxX = Math.max(tempBbox.maxX, rotated.x);
             tempBbox.minY = Math.min(tempBbox.minY, rotated.y);
             tempBbox.maxY = Math.max(tempBbox.maxY, rotated.y);
+
         });
         bbox = tempBbox;
         orientationCalculated = true;
-
         // 4. 트랙 비율에 맞춰 컨테이너 크기 조절
         const trackWidth = bbox.maxX - bbox.minX;
         const trackHeight = bbox.maxY - bbox.minY;
@@ -187,13 +188,13 @@
             playPauseBtn.textContent = '▶';
             return;
         }
-        
+
         playbackState.isPlaying = true;
         playPauseBtn.textContent = '❚❚';
         playbackState.lastSystemTime = performance.now();
         requestAnimationFrame(gameLoop);
     }
-    
+
     function gameLoop(now) {
         if (!playbackState.isPlaying) return;
         if (!playbackState.lastSystemTime) playbackState.lastSystemTime = now;
@@ -209,7 +210,7 @@
             requestAnimationFrame(gameLoop);
         }
     }
-    
+
     function updateLeaderboard(targetTime) {
         if (!targetTime) {
             leaderboardBody.innerHTML = '';
@@ -245,7 +246,7 @@
             leaderboardBody.appendChild(row);
         }
     }
-    
+
     function updateUI(timeMs) {
         timelineSlider.value = timeMs;
         currentTimeEl.textContent = msToTime(timeMs);
@@ -262,12 +263,11 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#181820';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
         if (!sessionStartDate || !bbox || !orientationCalculated) return;
 
         const showDrivers = playbackState.isPlaying || playbackState.currentTimeMs > 0;
         const targetTime = new Date(sessionStartDate.getTime() + playbackState.currentTimeMs);
-        
+
         const trackWidth = bbox.maxX - bbox.minX;
         const trackHeight = bbox.maxY - bbox.minY;
         const canvasDrawableWidth = canvas.width - (PADDING * 2);
@@ -280,13 +280,12 @@
         const trackCenterY = (bbox.minY + bbox.maxY) / 2;
         const offsetX = (canvas.width / 2) - (trackCenterX * scale);
         const offsetY = (canvas.height / 2) + (trackCenterY * scale);
-
         const transform = (x, y) => {
             const flippedX = x * flipX;
             const rotated = rotatePoint(flippedX, y, initialAngle);
-            return { 
-                x: rotated.x * scale + offsetX, 
-                y: -rotated.y * scale + offsetY 
+            return {
+                x: rotated.x * scale + offsetX,
+                y: -rotated.y * scale + offsetY
             };
         };
 
@@ -304,7 +303,6 @@
                 ctx.stroke();
             }
         });
-        
         if (showDrivers) {
             const latestLocations = {};
             for (let i = playbackState.locationBuffer.length - 1; i >= 0; i--) {
@@ -317,7 +315,6 @@
 
             for (const driverNumber in latestLocations) {
                 if (dnfDrivers.has(Number(driverNumber))) continue;
-                
                 const pos = latestLocations[driverNumber];
                 const driverInfo = DRIVER_DIRECTORY[driverNumber] || {};
                 const { x: canvasX, y: canvasY } = transform(pos.x, pos.y);
@@ -345,9 +342,26 @@
 
     async function initialize() {
         if (!SESSION_INFO) return showMessage("세션 정보를 불러올 수 없습니다.");
-        
         if (!sessionStartDate) {
             return showMessage('세션 시작 시간을 불러오지 못했습니다. 나중에 다시 시도해주세요.');
+        }
+
+        let raceStartTime = null;
+        if (SESSION_INFO?.race_control_messages) {
+            const raceStartMessage = SESSION_INFO.race_control_messages.find(
+                msg => (msg.message && msg.message.toLowerCase() === 'race start') ||
+                       (msg.category && msg.category.toLowerCase() === 'racestart')
+            );
+            if (raceStartMessage && raceStartMessage.date) {
+                raceStartTime = new Date(raceStartMessage.date);
+            }
+        }
+
+        if (raceStartTime && sessionStartDate) {
+            const timeOffset = raceStartTime.getTime() - sessionStartDate.getTime();
+            if (timeOffset > 0 && timeOffset < raceDuration) {
+                playbackState.currentTimeMs = timeOffset;
+            }
         }
 
         timelineSlider.max = raceDuration;
@@ -355,16 +369,13 @@
         playPauseBtn.addEventListener('click', togglePlayPause);
         playPauseBtn.disabled = true;
         timelineSlider.disabled = true;
-        
+
         window.addEventListener('resize', resizeCanvas);
-        
+
         let firstLapLocations = [];
         let bufferedUntilMs = 0;
         let success = true;
-
-        // --- 수정된 부분: 1랩 데이터만 먼저 로드 ---
         showMessage('트랙 레이아웃 분석 중...');
-        
         while (bufferedUntilMs < LAP_ESTIMATE_MS && success) {
             const startTime = sessionStartDate;
             const chunkStartMs = bufferedUntilMs;
@@ -376,7 +387,6 @@
                 const response = await fetch(`/api/locations/<%= session_key %>/${chunkStartTime}/${chunkEndTime}`);
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
-
                 if (bufferedUntilMs === 0 && (!data.locations || data.locations.length === 0)) {
                     throw new Error("이 경기에 대한 주행 데이터가 없습니다.");
                 }
@@ -385,11 +395,11 @@
                 if (data.positions) playbackState.positionBuffer.push(...data.positions);
                 if (data.race_control) {
                      playbackState.raceControlBuffer.push(...data.race_control);
-                    data.race_control.forEach(msg => {
+                     data.race_control.forEach(msg => {
                         if (msg.category === 'Retirement' && msg.driver_number) dnfDrivers.add(msg.driver_number);
                     });
                 }
-                
+
                 bufferedUntilMs = chunkEndMs;
             } catch (error) {
                 console.error('데이터 로딩 실패:', error);
@@ -397,34 +407,72 @@
                 success = false;
             }
         }
-        
+
         if (success) {
             hideMessage();
             playbackState.locationBuffer = firstLapLocations;
-            
+
+            if (!raceStartTime && sessionStartDate && firstLapLocations.length > 0) {
+                const firstMovements = new Map();
+                for (const loc of firstLapLocations) {
+                    if (!firstMovements.has(loc.driver_number)) {
+                        firstMovements.set(loc.driver_number, new Date(loc.date).getTime());
+                    }
+                }
+
+                if (firstMovements.size > 5) {
+                    const sortedTimes = [...firstMovements.values()].sort((a, b) => a - b);
+                    let largestGap = 0;
+                    let raceStartIndex = 0;
+                    for (let i = 1; i < sortedTimes.length; i++) {
+                        const gap = sortedTimes[i] - sortedTimes[i-1];
+                        if (gap > largestGap) {
+                            largestGap = gap;
+                            raceStartIndex = i;
+                        }
+                    }
+
+                    let bestTime;
+                    if (largestGap > 1000 && raceStartIndex > 0) {
+                         bestTime = sortedTimes[raceStartIndex];
+                    } else {
+                        const gridDrivers = sortedTimes.slice(0, Math.ceil(sortedTimes.length * 0.75));
+                        bestTime = gridDrivers[Math.floor(gridDrivers.length / 2)];
+                    }
+
+                    if (bestTime) {
+                        const timeOffset = bestTime - sessionStartDate.getTime();
+                        if (timeOffset > 0 && timeOffset < raceDuration) {
+                            playbackState.currentTimeMs = timeOffset;
+                        }
+                    }
+                }
+            }
+
             firstLapLocations.forEach(loc => {
                 const driverNum = loc.driver_number;
                 if (!trackPath.has(driverNum)) trackPath.set(driverNum, []);
                 trackPath.get(driverNum).push({ x: loc.x, y: loc.y });
             });
-
             calculateOrientationAndBbox(firstLapLocations);
-            
+
             playPauseBtn.disabled = false;
             timelineSlider.disabled = false;
-            
+
+            updateUI(playbackState.currentTimeMs);
+
             resizeCanvas();
         }
     }
 
-    function resizeCanvas() { 
+    function resizeCanvas() {
         if (trackContainer) {
             canvas.width = trackContainer.clientWidth;
             canvas.height = trackContainer.clientHeight;
-            drawOnCanvas(); 
+            drawOnCanvas();
         }
     }
-    
+
     initialize();
 </script>
 </body>

@@ -2,6 +2,7 @@
 import requests
 import json
 import sys
+import os
 
 def get_schedule(year):
     """지정된 연도의 모든 'Race' 세션 정보를 가져옵니다."""
@@ -15,6 +16,8 @@ def get_schedule(year):
         for session in data:
             schedule.append({
                 "session_key": session.get("session_key"),
+                "session_name": session.get("session_name"),
+                "session_year": session.get("year"),
                 "country_name": session.get("country_name"),
                 "meeting_name": session.get("meeting_name"),
                 "date_start": session.get("date_start"),
@@ -23,14 +26,19 @@ def get_schedule(year):
         
         schedule.sort(key=lambda x: x['date_start'])
         
-        # 결과를 화면에 출력하고 파일로도 저장합니다.
+        # public/data 폴더 경로 설정
+        output_dir = "public/data"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        
+        output_path = os.path.join(output_dir, "schedule.json")
+        
         output_json = json.dumps(schedule, indent=2)
         print(output_json)
         
-        # public/data 폴더에 schedule.json 으로 저장
-        with open("public/data/schedule.json", "w", encoding="utf-8") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(output_json)
-        print(f"\n[성공] public/data/schedule.json 파일에 저장되었습니다.")
+        print(f"\n[성공] {output_path} 파일에 저장되었습니다.")
 
     except Exception as e:
         print(json.dumps([{"error": f"API 요청 실패: {e}"}]))
